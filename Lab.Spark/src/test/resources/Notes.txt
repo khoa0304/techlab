@@ -1,0 +1,10 @@
+1. Reference: https://medium.com/@marcovillarreal_40011/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-ba9d743a157f
+
+
+2. To start Spark cluster:
+
+/media/sf_SharedVol/spark/docker-spark-cluster-master  ./build-images.sh
+
+Troubleshooting:
+
+1. Network not Found: docker-compose up --force-recreate

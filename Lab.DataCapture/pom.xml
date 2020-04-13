@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>lab.DataCapture</groupId>
+	<artifactId>lab.DataCapture</artifactId>
+
+	<parent>
+        <groupId>Lab.Common</groupId>
+        <artifactId>Lab.Common</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+	
+	<dependencies>	
+		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
+		<dependency>
+		    <groupId>org.apache.pdfbox</groupId>
+		    <artifactId>pdfbox</artifactId>
+		    <version>2.0.19</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-tools</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-uima</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+<!-- 
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-morfologik-addon</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+ -->
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-brat-annotator</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+	
+
+		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
+		<dependency>
+		    <groupId>org.apache.tika</groupId>
+		    <artifactId>tika-core</artifactId>
+		    <version>1.24</version>
+		</dependency>
+		
+	</dependencies>
+</project>

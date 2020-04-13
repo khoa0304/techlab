@@ -1,0 +1,46 @@
+6/5/19
+
+List:
+
+ArrayList
+
+Add
+
+O(1) end index of list 
+O(n) beginning index of list or arbitrary indices
+
+
+LinkedList:
+
+Add :
+
+O(1) beginning or end of the list
+O(n) Arbitrary indices
+
+
+Operation	Array	ArrayList	Singly Linked List
+Read (any where)	O(1)	O(1)	O(n)
+Add/Remove at end	O(1)	O(1)	O(n)
+Add/Remove in the interior	O(n)	O(n)	O(n)
+Resize	O(n)	N/A	N/A
+Find By position	O(1)	O(1)	O(n)
+Find By target (value)	O(n)	O(n)	O(n)
+
+When is it the best to use each one of the mentioned above data structures?
+
+Array:
+-------------------
+1- Excessive read, as time complexity of read is always O(1) 
+2- Random access to element using index: if you 
+
+ ArrayList:
+-------------------1- Excessive read 
+2- Random access to elements using their index
+3- More flexible in coding
+4- Effective use of memory space as items get allocated as needed
+
+LinkedList:
+------------------- 
+1- Effective use of memory space as items get allocated as needed
+2- Excessive Add/Remove of elements (It's better than ArrayList,
+ because since array list items get stored in memory in adjacent place. when adding a new element in the middle of the array list, all  the items after the inserted one have to be shifted, with Linked list the new item gets injected in the list without the need to shift the other items as they are not adjacent in the memory)

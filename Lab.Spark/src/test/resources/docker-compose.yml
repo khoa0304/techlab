@@ -1,0 +1,92 @@
+version: "3.7"
+services:
+  spark-master:
+    image: spark-master:2.3.1
+    container_name: spark-master
+    hostname: 10.5.0.2
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks: 
+      spark-network:
+        ipv4_address: 10.5.0.2
+    volumes:
+       - /media/sf_SharedVol/spark/spark-apps:/opt/spark-apps
+       - /media/sf_SharedVol/spark/spark-data:/opt/spark-data
+    environment:
+      - "SPARK_LOCAL_IP=10.5.0.2"
+  spark-worker-1:
+    image: spark-worker:2.3.1
+    container_name: spark-worker-1
+    hostname: 10.5.0.3
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    env_file: ./env/spark-worker.sh
+    environment:
+      - "SPARK_LOCAL_IP=10.5.0.3"
+    networks: 
+      spark-network:
+        ipv4_address: 10.5.0.3
+    volumes:
+       - /media/sf_SharedVol/spark/spark-apps:/opt/spark-apps
+       - /media/sf_SharedVol/spark/spark-data:/opt/spark-data
+  spark-worker-2:
+    image: spark-worker:2.3.1
+    container_name: spark-worker-2
+    hostname: 10.5.0.4
+    depends_on:
+      - spark-master
+    ports:
+      - "8082:8081"
+    env_file: ./env/spark-worker.sh
+    environment:
+      - "SPARK_LOCAL_IP=10.5.0.4"
+    networks: 
+      spark-network:
+        ipv4_address: 10.5.0.4
+    volumes:
+       - /media/sf_SharedVol/spark/spark-apps:/opt/spark-apps
+       - /media/sf_SharedVol/spark/spark-data:/opt/spark-data
+  spark-worker-3:
+    image: spark-worker:2.3.1
+    container_name: spark-worker-3
+    hostname: 10.5.0.5
+    depends_on:
+      - spark-master
+    ports:
+      - "8083:8081"
+    env_file: ./env/spark-worker.sh
+    environment:
+      - "SPARK_LOCAL_IP=10.5.0.5"
+    networks: 
+      spark-network:
+        ipv4_address: 10.5.0.5
+    volumes:
+       - /media/sf_SharedVol/spark/spark-apps:/opt/spark-apps
+       - /media/sf_SharedVol/spark/spark-data:/opt/spark-data
+  spark-worker-4:
+    image: spark-worker:2.3.1
+    container_name: spark-worker-4
+    hostname: 10.5.0.6
+    depends_on:
+      - spark-master
+    ports:
+      - "8084:8081"
+    env_file: ./env/spark-worker.sh
+    environment:
+      - "SPARK_LOCAL_IP=10.5.0.6"
+    networks: 
+      spark-network:
+        ipv4_address: 10.5.0.6
+    volumes:
+       - /media/sf_SharedVol/spark/spark-apps:/opt/spark-apps
+       - /media/sf_SharedVol/spark/spark-data:/opt/spark-data
+networks:
+  spark-network:
+    driver: bridge
+    ipam:
+     driver: default
+     config:
+       - subnet: 10.5.0.0/16

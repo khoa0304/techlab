@@ -1,0 +1,56 @@
+{
+   "accountId":1005,
+   "workflowExecId":5871,
+   "workflowTaskId":1,
+   "workflowName":"SubjectLine",
+   "pythonPid":0,
+   "modelName":"Model1",
+   "actionType":"train",
+   "modelInputPayload":{
+      "tableNames":[
+         "v_ds_esl_agg_summary"
+      ],
+      "dbNames":[
+         "DATA_WAREHOUSE_DB"
+      ]
+   },
+   "modelStoredTableName":{
+      "tableNames":[
+         "MODEL_STORED_PAYLOAD"
+      ],
+      "dbNames":[
+         "CUST_DB"
+      ]
+   },
+   "modelPredictedTableName":{
+      "tableNames":[
+
+      ],
+      "dbNames":[
+
+      ]
+   },
+   "sysAdminDbUrl":"192.168.0.3:1521:ORCLPDB1",
+   "sysAdminDbUser":"SYSADMIN",
+   "sysAdminEncryptedPwd":"SYSADMIN",
+   "dataSource":[
+      {
+         "dbUser":"SYSADMIN",
+         "dbURL":"192.168.0.3:1521:ORCLPDB1",
+         "dbPassword":"SYSADMIN",
+         "dbName":"SYSADMIN_DB"
+      },
+      {
+         "dbUser":"RES5_DM",
+         "dbURL":"10.11.7.27:1521:ORCLPDB1",
+         "dbPassword":"RES5_DM",
+         "dbName":"DATA_WAREHOUSE_DB"
+      },
+      {
+         "dbUser":"RES5_CUST",
+         "dbURL":"192.168.0.3:1521:ORCLPDB1",
+         "dbPassword":"RES5_CUST",
+         "dbName":"CUST_DB"
+      }
+   ]
+}
