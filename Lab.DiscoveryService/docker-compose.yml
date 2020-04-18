@@ -1,0 +1,18 @@
+version: '3'
+services:
+  discovery:
+    build: .
+    container_name: service-discovery
+    hostname: service-discovery
+    networks:
+      microservice-network:
+        ipv4_address: 10.15.1.1
+    ports:
+      - 18761:18761
+      
+networks:
+  microservice-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.15.0.0/16
