@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>lab.service</groupId>
+	<artifactId>lab-service-parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+
+	<name>parent-project</name>
+	<modules>
+
+		<module>Lab.Common</module>
+		<module>Lab.ServiceConfiguration</module>
+		<module>Lab.DiscoveryService</module>
+		<module>Lab.Cassandra</module>
+		<module>Lab.DataCapture</module>
+
+	</modules>
+
+
+</project>

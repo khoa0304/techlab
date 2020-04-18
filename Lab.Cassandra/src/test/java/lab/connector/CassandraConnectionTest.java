@@ -12,7 +12,7 @@ import com.datastax.driver.core.Session;
  * Simple Java client test to connect to trial cluster, create a time series data table, fill it, query it, and save it as csv for graphing.
  */
 
-public class CassTest1 {
+public class CassandraConnectionTest {
 	
 	static String n1PubIP = "144.91.109.48";
 	// static String n1PubIP = "192.168.16.2";

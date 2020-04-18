@@ -2,23 +2,53 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>lab.DataCapture</groupId>
-	<artifactId>lab.DataCapture</artifactId>
+	<groupId>lab.service</groupId>
+	<artifactId>lab-service-datacapture</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 
-	<parent>
-        <groupId>Lab.Common</groupId>
-        <artifactId>Lab.Common</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-    </parent>
+	<properties>
+		<java.version>1.8</java.version>
+		<spring-cloud.version>Hoxton.SR3</spring-cloud.version>
+	</properties>
+
+
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+
+
+	<dependencies>
+
+
+		<dependency>
+			<groupId>lab.service</groupId>
+			<artifactId>lab-service-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+
 	
-	<dependencies>	
 		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
 		<dependency>
-		    <groupId>org.apache.pdfbox</groupId>
-		    <artifactId>pdfbox</artifactId>
-		    <version>2.0.19</version>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>2.0.19</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.opennlp</groupId>
 			<artifactId>opennlp-tools</artifactId>
@@ -30,26 +60,35 @@
 			<artifactId>opennlp-uima</artifactId>
 			<version>1.9.2</version>
 		</dependency>
-<!-- 
-		<dependency>
-			<groupId>org.apache.opennlp</groupId>
-			<artifactId>opennlp-morfologik-addon</artifactId>
-			<version>1.9.2</version>
-		</dependency>
- -->
+		<!-- <dependency> <groupId>org.apache.opennlp</groupId> <artifactId>opennlp-morfologik-addon</artifactId> 
+			<version>1.9.2</version> </dependency> -->
 		<dependency>
 			<groupId>org.apache.opennlp</groupId>
 			<artifactId>opennlp-brat-annotator</artifactId>
 			<version>1.9.2</version>
 		</dependency>
-	
+
 
 		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
 		<dependency>
-		    <groupId>org.apache.tika</groupId>
-		    <artifactId>tika-core</artifactId>
-		    <version>1.24</version>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>1.24</version>
 		</dependency>
-		
+
+
+		<!-- TEST -->
+
+
+
+		<!-- https://mvnrepository.com/artifact/org.testng/testng -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>6.10</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
+
 </project>
