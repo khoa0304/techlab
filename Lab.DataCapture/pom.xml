@@ -25,6 +25,18 @@
 						<target>${java.version}</target>
 					</configuration>
 				</plugin>
+
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<configuration>
+								<mainClass>Lab.DataCaptureMain</mainClass>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -41,7 +53,7 @@
 		</dependency>
 
 
-	
+
 		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>

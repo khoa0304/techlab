@@ -1,7 +1,7 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_SERVER:http://discovery:18761/eureka}
+      defaultZone: ${EUREKA_SERVER:http://localhost:18761/eureka}
 spring:
   application:
     name: datacapture-service
