@@ -4,7 +4,7 @@ services:
     build: ./Lab.ServiceConfiguration
     environment:
       - JVM_OPTS=""
-      - "EUREKA_SERVER=http://discovery:18761/eureka"
+      - "EUREKA_SERVER=http://10.15.1.1:18761/eureka"
     networks:
       labdiscoveryservice_microservice-network:
         ipv4_address: 10.15.1.2
