@@ -13,11 +13,23 @@
 
 		<module>Lab.Common</module>
 		<module>Lab.ServiceConfiguration</module>
-		<module>Lab.DiscoveryService</module>
 		<module>Lab.Cassandra</module>
 		<module>Lab.DataCapture</module>
 
+		<!--
+		 	<module>Lab.DiscoveryService</module>
+		 -->
 	</modules>
 
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 
 </project>
