@@ -5,11 +5,11 @@ services:
     environment:
       - "EUREKA_SERVER=http://10.15.1.1:18761/eureka"
     networks:
-      labdiscoveryservice_microservice-network:
+      labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.2
     ports:
       - 8888:8888
       
 networks:
-  labdiscoveryservice_microservice-network:
+  labdiscoveryservice_microservice:
     external: true
