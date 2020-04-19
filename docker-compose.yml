@@ -3,9 +3,10 @@ services:
   config:
     build: ./Lab.ServiceConfiguration
     container_name: service-configuration
-    hostname: service-configuration
+    hostname: 10.15.1.2
     environment:
       - "EUREKA_SERVER=http://10.15.1.1:18761/eureka"
+      - "server.por=11512"
     networks:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.2
@@ -14,9 +15,10 @@ services:
   data-capture:
     build: ./Lab.DataCapture
     container_name: data-capture
-    hostname: data-capture
+    hostname: 10.15.1.3
     environment:
       - "EUREKA_SERVER=http://10.15.1.1:18761/eureka"
+      - "server.por=11513"
     networks:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.3
