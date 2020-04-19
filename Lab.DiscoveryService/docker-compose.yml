@@ -3,7 +3,7 @@ services:
   discovery:
     build: .
     container_name: service-discovery
-    hostname: service-discovery
+    hostname: discovery
     networks:
       microservice-network:
         ipv4_address: 10.15.1.1
