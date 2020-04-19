@@ -27,6 +27,20 @@
 						<target>${java.version}</target>
 					</configuration>
 				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.2.0</version>
+					<configuration>
+						<archive>
+							<manifest>
+								<!-- Your main class -->
+								<mainClass>lab.ConfigApplication</mainClass>
+							</manifest>
+						</archive>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
