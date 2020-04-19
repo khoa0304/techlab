@@ -3,17 +3,14 @@ services:
   config:
     build: ./Lab.ServiceConfiguration
     environment:
-      - JAVA_OPTS=
-         -DEUREKA_SERVER=http://discovery:18761/eureka
- 	networks:
-      microservice-network:
+      - JVM_OPTS=""
+      - "EUREKA_SERVER=http://discovery:18761/eureka"
+    networks:
+      labdiscoveryservice_microservice-network:
         ipv4_address: 10.15.1.2
     ports:
       - 8888:8888
       
 networks:
-  microservice-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.15.0.0/16
+  labdiscoveryservice_microservice-network:
+    external: true
