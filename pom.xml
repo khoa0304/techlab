@@ -13,11 +13,10 @@
 
 		<module>Lab.Common</module>
 		<module>Lab.ServiceConfiguration</module>
-		
 		<module>Lab.DataCapture</module>
-
-		<!--
 		<module>Lab.Cassandra</module>
+		<!--
+		
 		 	<module>Lab.DiscoveryService</module>
 		 -->
 	</modules>
