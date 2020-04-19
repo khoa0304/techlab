@@ -5,15 +5,15 @@ services:
     container_name: service-discovery
     hostname: discovery
     environment:
-      - JVM_OPTS=-Xmx1g
+      - JAVA_OPTS=-Xmx1g
     networks:
-      microservice-network:
+      microservice:
         ipv4_address: 10.15.1.1
     ports:
       - 18761:18761
       
 networks:
-  microservice-network:
+  microservice:
     driver: bridge
     ipam:
       config:
