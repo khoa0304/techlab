@@ -4,6 +4,9 @@ services:
     build: .
     container_name: service-discovery
     hostname: discovery
+    environment:
+      - JAVA_OPTS=
+      		-Xmx1024m
     networks:
       microservice-network:
         ipv4_address: 10.15.1.1
