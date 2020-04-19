@@ -10,7 +10,7 @@ services:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.2
     ports:
-      - 101512:101512
+      - 11512:11512
   data-capture:
     build: ./Lab.DataCapture
     container_name: data-capture
@@ -21,7 +21,7 @@ services:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.3
     ports:
-      - 101513:101513
+      - 11513:11513
       
 networks:
   labdiscoveryservice_microservice:

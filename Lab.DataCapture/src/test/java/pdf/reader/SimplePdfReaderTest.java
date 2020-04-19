@@ -11,7 +11,7 @@ import lab.pdf.reader.SimplePdfReader;
 
 public class SimplePdfReaderTest {
 
-	@Test
+	@Test(enabled=false)
 	public void test1() throws IOException {
 		
 		URL pdfFileURL = getClass().getResource("/pdf/The-Data-Engineers-Guide-to-Apache-Spark.pdf");
