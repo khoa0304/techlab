@@ -26,8 +26,14 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+						<execution>
+							<configuration>
+								<mainClass>lab.discoveryservice.DiscoveryApplication</mainClass>
+							</configuration>
+						</execution>
+					</executions>
 			</plugin>
-
 		</plugins>
 	</build>
 
