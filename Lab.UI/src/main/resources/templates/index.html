@@ -77,7 +77,7 @@
     $("#demo-upload").dropzone({
     	
     	maxFilesize: 4096, // MB
-    	
+    	timeout: 7200000‬,
         success : function(file, response) {
             toastr.success('File ' + file.name + ' uploaded successfully');
         }
