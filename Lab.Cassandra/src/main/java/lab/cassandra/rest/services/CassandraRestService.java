@@ -26,7 +26,7 @@ public class CassandraRestService {
 	
 	@GetMapping("/check")
 	@ResponseBody
-	public ResponseEntity<String> pingDataCapture(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
+	public ResponseEntity<String> pingDataCapture(@RequestParam(name = "name", required = false, defaultValue = "From Cassandra") String name) {
 		 return restTemplate
 	                .exchange("http://datacapture-service/ping?name=" +  name,
 	                		HttpMethod.GET, null,String.class);
