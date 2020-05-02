@@ -6,8 +6,8 @@ import java.net.URL;
 
 import org.testng.annotations.Test;
 
-import lab.nlp.NLPProcessor;
-import lab.pdf.reader.SimplePdfReader;
+import lab.datacapture.nlp.service.NLPProcessor;
+import lab.datacapture.pdf.reader.service.SimplePdfReader;
 
 public class SimplePdfReaderTest {
 

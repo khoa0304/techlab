@@ -11,24 +11,24 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 @Controller
-@RequestMapping("/cassandra")
+@RequestMapping("/")
 public class CassandraCoreRestService {
 
 	@Autowired
 	private RestTemplate restTemplate;
 
 	
-	@GetMapping("/rawtext")
-	@ResponseBody
-	public String sayHello(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
-		return "Hello " + name;
-	}
-	
 	@GetMapping("/ping")
 	@ResponseBody
-	public ResponseEntity<String> pingDataCapture(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
+	public String sayHello(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
+		return "Cassandra Hello " + name;
+	}
+	
+	@GetMapping("/check")
+	@ResponseBody
+	public ResponseEntity<String> pingDataCapture(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
 		 return restTemplate
-	                .exchange("http://datacapture-service/datacapture/ping?name=" +  name,
+	                .exchange("http://datacapture-service/ping?name=" +  name,
 	                		HttpMethod.GET, null,String.class);
 	}
 }

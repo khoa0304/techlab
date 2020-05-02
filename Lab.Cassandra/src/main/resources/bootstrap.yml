@@ -1,14 +1,8 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_SERVER:http://localhost:18761/eureka}
+      defaultZone: ${EUREKA_SERVER:http://khoa:welcome123@localhost:18761/eureka}
 spring:
   application:
     name: cassandra-service
-  cloud:
-    config:
-      discovery:
-        enabled: true
-        service-id: CONFIGSERVER
-      failFast: true
         

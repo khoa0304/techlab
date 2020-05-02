@@ -1,4 +1,4 @@
-package lab.nlp;
+package lab.datacapture.nlp.service;
 
 import java.io.IOException;
 import java.net.URL;

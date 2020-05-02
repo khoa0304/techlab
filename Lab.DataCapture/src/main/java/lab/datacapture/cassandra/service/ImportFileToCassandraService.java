@@ -1,4 +1,4 @@
-package lab.datastore.cassandra;
+package lab.datacapture.cassandra.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -11,17 +11,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 @Controller
-@RequestMapping("/datacapture")
+@RequestMapping("/")
 public class ImportFileToCassandraService {
 
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@GetMapping("/text")
+	@GetMapping("/check")
 	@ResponseBody
-	public ResponseEntity<String> sayHello(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
+	public ResponseEntity<String> sayHello(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
 		 return restTemplate
-	                .exchange("http://cassandra-service/cassandra/rawtext?name=" +  name,
+	                .exchange("http://cassandra-service/check?name=" +  name,
 	                		HttpMethod.GET, null,String.class);
 	}
 	
@@ -29,6 +29,6 @@ public class ImportFileToCassandraService {
 	@GetMapping("/ping")
 	@ResponseBody
 	public String pong(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
-		return " Data Capture Service respond " + name;
+		return " Data Capture Service responds " + name;
 	}
 }

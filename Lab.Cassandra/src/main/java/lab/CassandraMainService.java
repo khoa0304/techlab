@@ -15,7 +15,14 @@ public class CassandraMainService {
 		return new RestTemplate();
 	}
 
-	
+//	@Autowired
+//	private RestService restService;
+//
+//	@Bean
+//	public RestTemplate restTemplate() {
+//		return restService.getRestTemplate();
+//	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(CassandraMainService.class, args);
 	}

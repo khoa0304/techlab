@@ -1,4 +1,4 @@
-package lab.pdf.reader;
+package lab.datacapture.pdf.reader.service;
 
 import java.io.IOException;
 import java.net.URL;
