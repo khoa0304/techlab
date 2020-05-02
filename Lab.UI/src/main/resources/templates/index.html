@@ -1,90 +1,87 @@
 <!DOCTYPE HTML>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Spring Boot Thymeleaf Application - Bootstrap Dropzone</title>
+<meta charset="UTF-8" />
+<title>Spring Boot Thymeleaf Application - Bootstrap Dropzone</title>
 
-    <link th:rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.min.css} "/>
-    <link th:rel="stylesheet" th:href="@{/css/dropzone/dropzone.css}"/>
-    <link th:rel="stylesheet" th:href="@{/css/toastr/toastr.min.css}"/>
+<link th:rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.min.css} " />
+<link th:rel="stylesheet" th:href="@{/css/dropzone/dropzone.css}" />
+<link th:rel="stylesheet" th:href="@{/css/toastr/toastr.min.css}" />
 </head>
 <body>
 
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
-    <div class="container">
-        <a class="navbar-brand" href="/">Thymeleaf - Bootstrap Dropzone</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
-                aria-controls="navbarResponsive"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarResponsive">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Home
-                        <span class="sr-only">(current)</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">About</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Services</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Contact</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+	<!-- Navigation -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">Thymeleaf - Bootstrap Dropzone</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse"
+				data-target="#navbarResponsive" aria-controls="navbarResponsive"
+				aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarResponsive">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item active"><a class="nav-link" href="#">Home
+							<span class="sr-only">(current)</span>
+					</a></li>
+					<li class="nav-item"><a class="nav-link" href="#">About</a></li>
+					<li class="nav-item"><a class="nav-link" href="#">Services</a>
+					</li>
+					<li class="nav-item"><a class="nav-link" href="#">Contact</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8 mt-5">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-8 mt-5">
 
-            <div th:if="${message}">
-                <h2 th:text="${message}"/>
-            </div>
+				<div th:if="${message}">
+					<h2 th:text="${message}" />
+				</div>
 
-            <div id="dropzone">
-                <form action="/upload" class="dropzone needsclick" id="demo-upload">
+				<div id="dropzone">
+					<form action="/upload" class="dropzone needsclick" id="uploadFile">
 
-                    <div class="dz-message needsclick">
-                        <button type="button" class="dz-button">Drop files here or click to upload.</button>
-                        <br/>
-                    </div>
+						<div class="dz-message needsclick">
+							<button type="button" class="dz-button">Drop files here
+								or click to upload.</button>
+							<br />
+						</div>
 
-                </form>
-            </div>
+					</form>
+				</div>
 
-        </div>
-    </div>
+			</div>
+		</div>
 
-</div>
+	</div>
 
 
-<script th:src="@{/js/jquery/jquery-3.5.0.js}"></script>
-<script th:src="@{/js/popper/popper.min.js}"></script>
-<script th:src="@{/js/bootstrap/bootstrap.min.js}"></script>
-<script th:src="@{/js/dropzone/dropzone.js}"></script>
-<script th:src="@{/js/toastr/toastr.min.js}"></script>
+	<script th:src="@{/js/jquery/jquery-3.5.0.js}"></script>
+	<script th:src="@{/js/popper/popper.min.js}"></script>
+	<script th:src="@{/js/bootstrap/bootstrap.min.js}"></script>
+	<script th:src="@{/js/dropzone/dropzone.js}"></script>
+	<script th:src="@{/js/toastr/toastr.min.js}"></script>
 
-<script>
-    Dropzone.autoDiscover = false;
+	<script type="text/javascript">
+	
+		Dropzone.autoDiscover = false;
+		
+		$("#uploadFile").dropzone({
+			
+			maxFilesize : 4096,//MB
+			timeout : 7200000,//milisecond - 2 hours
+			acceptedFiles : ".jpeg,.jpg,.png,.gif,.pdf,.txt,.csv",
 
-    $("#demo-upload").dropzone({
-    	
-    	maxFilesize: 4096, // MB
-    	timeout: 7200000‬,
-        success : function(file, response) {
-            toastr.success('File ' + file.name + ' uploaded successfully');
-        }
-    
-    	
-    });
-</script>
+			success : function(file, response) {
+				toastr.success('File ' + file.name + ' uploaded successfully');
+			}
+
+		});
+	</script>
 
 </body>
 </html>
