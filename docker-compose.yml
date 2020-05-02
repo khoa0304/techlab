@@ -12,7 +12,7 @@ services:
     #ports:
       #- 11512:11512
     expose:
-   	 - "11512"
+   	  - "11512"
   data-capture:
     build: ./Lab.DataCapture
     container_name: data-capture-service
@@ -27,7 +27,7 @@ services:
     #ports:
       #- 11513:11513
     expose:
-   	 - "11513"
+   	  - "11513"
   cassandra:
     build: ./Lab.Cassandra
     container_name: cassandra-service
@@ -42,7 +42,7 @@ services:
     #ports:
       #- 11514:11514
     expose:
-   	 - "11514"
+   	  - "11514"
       
   ui:
     build: ./Lab.UI
