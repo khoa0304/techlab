@@ -42,7 +42,7 @@ services:
     #ports:
       #- 11514:11514
     expose:
-     - "11514"
+      - "11514"
       
   ui:
     build: ./Lab.UI
