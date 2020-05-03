@@ -43,15 +43,17 @@ public class FileStorageService {
 				Set<PosixFilePermission> permissions = PosixFilePermissions.asFileAttribute(getPosixFilePermission()).value();
 				FileAttribute<Set<PosixFilePermission>> fileAttributes = PosixFilePermissions.asFileAttribute(permissions);
 				Files.createDirectories(this.fileStorageLocation, fileAttributes);
+				logger.info("Finished creating directory for uploaded file {}", this.fileStorageLocation.toAbsolutePath());
 			}
 			else{
 				File file = this.fileStorageLocation.toFile();
 				file.mkdirs();
 				file.setWritable(true);
 				file.setReadable(true);
+				logger.info("Finished creating directory for uploaded file {}", this.fileStorageLocation.toAbsolutePath());
 			}
 			
-			logger.info("Finished creating file {}", this.fileStorageLocation.toAbsolutePath());
+			
 			
 		} catch (Exception ex) {
 			throw new FileStorageException("Could not create the directory where the uploaded files will be stored.",

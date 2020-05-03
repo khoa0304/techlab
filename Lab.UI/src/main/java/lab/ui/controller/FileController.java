@@ -47,6 +47,8 @@ public class FileController {
     	logger.info("Finished uploading file {} - Size {} KB", file.getOriginalFilename(),file.getSize()/1024);
         
         String fileName = fileStorageService.storeFile(file);
+        
+        logger.info("Finished storing file {} in {} ", file.getOriginalFilename(),fileName);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/downloadFile/")
