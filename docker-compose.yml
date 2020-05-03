@@ -57,6 +57,8 @@ services:
         ipv4_address: 10.15.1.5
     ports:
       - 11515:11515
+    expose:
+      - "11515"
       
 networks:
   labdiscoveryservice_microservice:
