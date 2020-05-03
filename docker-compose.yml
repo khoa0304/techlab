@@ -17,6 +17,8 @@ services:
     build: ./Lab.DataCapture
     container_name: data-capture-service
     hostname: 10.15.1.3
+    depends_on:
+      - configuration-service
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
@@ -32,6 +34,8 @@ services:
     build: ./Lab.Cassandra
     container_name: cassandra-service
     hostname: 10.15.1.4
+    depends_on:
+      - configuration-service
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
@@ -48,6 +52,8 @@ services:
     build: ./Lab.UI
     container_name: ui-service
     hostname: 10.15.1.5
+    depends_on:
+      - configuration-service
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
