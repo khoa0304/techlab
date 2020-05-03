@@ -1,4 +1,4 @@
-package lab.datacapture.file.model;
+package lab.ui.model;
 
 public class UploadFileResponse {
  

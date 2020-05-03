@@ -11,7 +11,7 @@
 		<spring-cloud.version>Hoxton.SR3</spring-cloud.version>
 		<bootstrap.version>4.0.0-2</bootstrap.version>
 		<webjars-locator.version>0.40</webjars-locator.version>
-		<lombok.version>1.18.2</lombok.version>
+		<lombok.version>1.18.4</lombok.version>
 		<bootstrap.version>4.4.1</bootstrap.version>
 	</properties>
 

@@ -1,4 +1,4 @@
-package lab.security;
+package lab.ui.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

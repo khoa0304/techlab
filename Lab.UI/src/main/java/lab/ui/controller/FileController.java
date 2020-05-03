@@ -1,4 +1,4 @@
-package lab.datacapture.file.service;
+package lab.ui.controller;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,18 +23,29 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import lab.datacapture.file.model.UploadFileResponse;
+import lab.ui.file.service.FileStorageService;
+import lab.ui.model.UploadFileResponse;
 
 @RestController
 public class FileController {
 
     private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 
+    @Value("${datacapture.service.name}")
+	private String dataCaptureServiceName;
+    
+    @Value("${cassandra.service.name}")
+	private String cassandraServiceName;
+	
+    
     @Autowired
     private FileStorageService fileStorageService;
     
     @PostMapping("/uploadFile")
     public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
+    	
+    	logger.info("Finished uploading file {} - Size {} KB", file.getOriginalFilename(),file.getSize()/1024);
+        
         String fileName = fileStorageService.storeFile(file);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()

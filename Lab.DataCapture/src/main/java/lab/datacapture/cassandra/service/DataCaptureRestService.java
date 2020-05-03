@@ -1,6 +1,7 @@
 package lab.datacapture.cassandra.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,19 +17,23 @@ public class DataCaptureRestService {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Value("${cassandra.service.name}")
+	private String cassandraServiceName;
 
+	
 	@GetMapping("/check")
 	@ResponseBody
-	public ResponseEntity<String> sayHello(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
+	public ResponseEntity<String> check(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
 		 return restTemplate
-	                .exchange("http://cassandra-service/ping?name=" +  name,
+	                .exchange("http://"+cassandraServiceName+"/ping?name=" +  name,
 	                		HttpMethod.GET, null,String.class);
 	}
 	
 	
 	@GetMapping("/ping")
 	@ResponseBody
-	public String pong(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
+	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
 		return " Data Capture Service responds " + name;
-	}
+	}	
 }

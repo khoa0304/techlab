@@ -1,4 +1,4 @@
-package lab.datacapture.exception;
+package lab.ui.exception;
 
 public class FileStorageException extends RuntimeException {
     /**

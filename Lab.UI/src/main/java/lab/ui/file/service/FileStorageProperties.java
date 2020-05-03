@@ -1,4 +1,4 @@
-package lab.datacapture.file.service;
+package lab.ui.file.service;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
