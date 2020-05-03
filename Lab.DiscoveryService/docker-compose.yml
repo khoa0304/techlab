@@ -12,7 +12,7 @@ services:
     ports:
       - 18761:18761
   config:
-    build: ./Lab.ConfigService
+    build: ../Lab.ConfigService
     container_name: configuration-service
     hostname: 10.15.1.2
     environment:
