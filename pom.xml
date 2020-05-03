@@ -12,10 +12,10 @@
 	<modules>
 
 		<module>Lab.Common</module>
-		<module>Lab.ServiceConfiguration</module>
-		<module>Lab.UI</module>
+		<module>Lab.ConfigService</module>
 		<module>Lab.DataCapture</module>
 		<module>Lab.Cassandra</module>
+		<module>Lab.UI</module>
 		<!--
 		
 		 	<module>Lab.DiscoveryService</module>
