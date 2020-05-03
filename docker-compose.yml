@@ -13,12 +13,8 @@ services:
       #- 11512:11512
     expose:
        - "11512"
-    command: bash -c "ip route && sleep 10"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://10.15.1.2:11512"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    command: /bin/bash -c "sleep 10"
+  
   data-capture:
     build: ./Lab.DataCapture
     container_name: data-capture-service
