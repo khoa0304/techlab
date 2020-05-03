@@ -41,6 +41,8 @@ services:
         ipv4_address: 10.15.1.5
     ports:
       - 11515:11515
+    volumes:
+      - /tmp:/home/khoa
     expose:
       - "11515"
       
