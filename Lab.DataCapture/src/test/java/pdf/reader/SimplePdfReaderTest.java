@@ -18,7 +18,7 @@ public class SimplePdfReaderTest {
 		assertNotNull(pdfFileURL);
 		
 		SimplePdfReader simplePdfReader = new SimplePdfReader();
-		String textContent = simplePdfReader.getPdfText(pdfFileURL);
+		String textContent = simplePdfReader.extractPdfContent(pdfFileURL);
 		
 		NLPProcessor nlpProcessor = new NLPProcessor();
 		String[] sentences = nlpProcessor.extractSentences(textContent);

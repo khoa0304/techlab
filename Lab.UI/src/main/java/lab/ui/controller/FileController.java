@@ -1,5 +1,6 @@
 package lab.ui.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -20,9 +21,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import lab.common.file.dto.DocumentDto;
 import lab.ui.file.service.FileStorageService;
 import lab.ui.model.UploadFileResponse;
 
@@ -37,16 +40,19 @@ public class FileController {
     @Value("${cassandra.service.name}")
 	private String cassandraServiceName;
 	
-    
     @Autowired
     private FileStorageService fileStorageService;
+    
+    @Autowired
+	private RestTemplate restTemplate;
     
     @PostMapping("/uploadFile")
     public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
     	
     	logger.info("Finished uploading file {} - Size {} KB", file.getOriginalFilename(),file.getSize()/1024);
         
-        String fileName = fileStorageService.storeFile(file);
+        File uploadedFile = fileStorageService.storeFile(file);
+        String fileName = uploadedFile.getAbsolutePath();
         
         logger.info("Finished storing file {} in {} ", file.getOriginalFilename(),fileName);
 
@@ -55,6 +61,13 @@ public class FileController {
                 .path(fileName)
                 .toUriString();
 
+        DocumentDto documentDto = new DocumentDto();
+        documentDto.setAbsoluteDirectoryPath(uploadedFile.getParentFile().getAbsolutePath());
+        documentDto.setFileNamePlusExtesion(uploadedFile.getName());
+        
+        restTemplate.postForEntity("http://"+dataCaptureServiceName+"/pdf/store",
+        		documentDto ,String.class);
+        
         return new UploadFileResponse(fileName, fileDownloadUri,
                 file.getContentType(), file.getSize());
     }
