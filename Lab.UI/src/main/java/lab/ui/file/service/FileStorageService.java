@@ -30,12 +30,12 @@ import lab.ui.exception.FileStorageException;
 public class FileStorageService {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
-	private final Path fileStorageLocation;
+	private final Path filePath;
 
 	@Autowired
 	public FileStorageService(FileStorageProperties fileStorageProperties) {
 
-		this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
+		this.filePath = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
 		
 		logger.info("\n\n===================================================================================\n\n");
 		
@@ -44,16 +44,16 @@ public class FileStorageService {
 			if(!SystemUtils.IS_OS_WINDOWS) {
 				Set<PosixFilePermission> permissions = PosixFilePermissions.asFileAttribute(getPosixFilePermission()).value();
 				FileAttribute<Set<PosixFilePermission>> fileAttributes = PosixFilePermissions.asFileAttribute(permissions);
-				Files.createDirectories(this.fileStorageLocation, fileAttributes);
+				Files.createDirectories(this.filePath, fileAttributes);
 			
-				logger.info("Finished creating directory for uploaded file {}", this.fileStorageLocation.toAbsolutePath());
+				logger.info("Finished creating directory for uploaded file {}", this.filePath.toAbsolutePath());
 			}
 			else{
-				File file = this.fileStorageLocation.toFile();
+				File file = this.filePath.toFile();
 				file.mkdirs();
 				file.setWritable(true);
 				file.setReadable(true);
-				logger.info("Finished creating directory for uploaded file {}", this.fileStorageLocation.toAbsolutePath());
+				logger.info("Finished creating directory for uploaded file {}", this.filePath.toAbsolutePath());
 			}
 			
 			logger.info("\n\n===================================================================================\n\n");
@@ -75,7 +75,7 @@ public class FileStorageService {
 			}
 
 			// Copy file to the target location (Replacing existing file with the same name)
-			Path targetLocation = this.fileStorageLocation.resolve(fileName);
+			Path targetLocation = this.filePath.resolve(fileName);
 			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
 			return targetLocation.toAbsolutePath().toString();
@@ -86,7 +86,7 @@ public class FileStorageService {
 
 	public Resource loadFileAsResource(String fileName) {
 		try {
-			Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+			Path filePath = this.filePath.resolve(fileName).normalize();
 			Resource resource = new UrlResource(filePath.toUri());
 			if (resource.exists()) {
 				return resource;
