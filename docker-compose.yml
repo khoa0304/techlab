@@ -53,4 +53,4 @@ networks:
   labdiscoveryservice_microservice:
     external: true
   cluster1_cassandra-network:
-  	external: true
+    external: true
