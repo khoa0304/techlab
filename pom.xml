@@ -10,16 +10,9 @@
 
 	<name>parent-project</name>
 	<modules>
-
-		<module>Lab.Common</module>
-		<module>Lab.ConfigService</module>
-		<module>Lab.DataCapture</module>
+ 		<module>Lab.DataCapture</module>
 		<module>Lab.Cassandra</module>
 		<module>Lab.UI</module>
-		<!--
-		
-		 	<module>Lab.DiscoveryService</module>
-		 -->
 	</modules>
 
 	<build>
