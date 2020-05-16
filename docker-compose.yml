@@ -12,6 +12,8 @@ services:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.3
       cluster1_cassandra-network:
+    ports:
+     - 11513:11513
     expose:
      - "11513"
      
@@ -27,6 +29,8 @@ services:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.4
       cluster1_cassandra-network:
+    ports:
+     - 11514:11514
     expose:
       - "11514"
       
