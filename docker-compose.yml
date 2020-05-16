@@ -16,6 +16,7 @@ services:
       - /tmp:/home/khoa
     ports:
      - 11513:11513
+     - 4443:4444
     expose:
      - "11513"
      
@@ -35,6 +36,7 @@ services:
       - /tmp:/home/khoa
     ports:
      - 11514:11514
+     - 4444:4444
     expose:
       - "11514"
       
@@ -52,6 +54,7 @@ services:
         ipv4_address: 10.15.1.5
     ports:
       - 11515:11515
+      - 4445:4444
     volumes:
       - /tmp:/home/khoa
     expose:
