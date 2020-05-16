@@ -72,6 +72,8 @@ public class DataCaptureRestService {
 			final File file = new File(documentDto.getAbsoluteFilePath());
 			
 			String content = simplePdfReader.extractPdfContent(file.toURI().toURL());
+			logger.info("Content length {} ", content.length());
+			
 			File newTextFile = fileResourceUtil.writeFileContentAsText(documentDto, content);
 			
 			DocumentDto textFileDto = new DocumentDto();
