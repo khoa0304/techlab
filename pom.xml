@@ -9,8 +9,18 @@
 
 
 	<name>parent-project</name>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.6.RELEASE</version>
+	</parent>
+
 	<modules>
- 		<module>Lab.DataCapture</module>
+		<!-- DO NOT include Lab.Common as Common Project is not a spring boot application.
+		<module>Lab.Common</module>
+		 -->
+		<module>Lab.DataCapture</module>
 		<module>Lab.Cassandra</module>
 		<module>Lab.UI</module>
 	</modules>
@@ -25,5 +35,5 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-
+	
 </project>

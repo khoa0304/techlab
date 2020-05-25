@@ -105,8 +105,7 @@ public class DataCaptureRestService {
 					}
 					
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.error(e.toString());
 				}
 			}
 			
