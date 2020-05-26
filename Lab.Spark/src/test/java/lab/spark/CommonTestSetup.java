@@ -36,7 +36,7 @@ public class CommonTestSetup extends AbstractTestNGSpringContextTests {
 	@AfterClass
 	public void tearDown() {
 		
-		if(sparkSession ==null) {
+		if(sparkSession !=null) {
 			sparkSession.close();
 		}
 		
