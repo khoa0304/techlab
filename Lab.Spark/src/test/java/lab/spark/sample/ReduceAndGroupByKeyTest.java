@@ -1,4 +1,4 @@
-package lab.spark;
+package lab.spark.sample;
 
 import java.net.UnknownHostException;
 
@@ -13,8 +13,9 @@ public class ReduceAndGroupByKeyTest extends CommonTestSetup {
 	@Test
 	public void test1() throws UnknownHostException  {
 		 
+		this.javaSparkContext = sparkConfigService.getJavaSparkContext(getClass().getName());
 		ReduceAndGroupByKey reduceAndGroupByKey = new ReduceAndGroupByKey();
-		reduceAndGroupByKey.perform(sparkConfigService.getJavaSparkContext());
+		reduceAndGroupByKey.perform(this.javaSparkContext);
 		
 	}
 }

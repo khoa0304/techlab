@@ -38,9 +38,33 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.12.4</version>
+					<configuration>
+						<skipTests>true</skipTests>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<!--Spark java.lang.NoClassDefFoundError: org/codehaus/janino/InternalCompilerException -->
+			<dependency>
+				<groupId>org.codehaus.janino</groupId>
+				<artifactId>commons-compiler</artifactId>
+				<version>3.0.8</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.janino</groupId>
+				<artifactId>janino</artifactId>
+				<version>3.0.8</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 
@@ -55,6 +79,15 @@
 		<!-- Notes: 1. _2.11 such as spark-core_2.11 is for Spark compiled using 
 			Scala version 2.11 -->
 
+
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>commons-compiler</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core -->
 		<dependency>
 			<groupId>org.apache.spark</groupId>
@@ -82,6 +115,35 @@
 			<version>2.4.5</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>com.datastax.spark</groupId>
+			<artifactId>spark-cassandra-connector_2.11</artifactId>
+			<version>2.5.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.datastax.oss</groupId>
+					<artifactId>java-driver-core-shaded</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.datastax.oss</groupId>
+			<artifactId>java-driver-core</artifactId>
+			<version>4.5.0</version>
+		</dependency>
+
+		<!-- Cassandra <dependency> <groupId>com.datastax.spark</groupId> <artifactId>spark-cassandra-connector-driver_2.11</artifactId> 
+			<version>2.5.0</version> </dependency> -->
+
+
+		<!-- https://mvnrepository.com/artifact/org.apache.tinkerpop/gremlin-core -->
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>gremlin-core</artifactId>
+			<version>3.4.6</version>
+		</dependency>
 
 		<!-- TestNG -->
 

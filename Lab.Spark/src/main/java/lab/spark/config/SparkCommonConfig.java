@@ -1,4 +1,4 @@
-package lab.spark;
+package lab.spark.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

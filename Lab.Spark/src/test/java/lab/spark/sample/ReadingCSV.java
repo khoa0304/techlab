@@ -1,3 +1,4 @@
+package lab.spark.sample;
 //package lab.spark;
 //
 //import org.apache.spark.api.java.JavaRDD;

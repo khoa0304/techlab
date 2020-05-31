@@ -2,7 +2,6 @@ package lab.spark.sample;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,8 +16,6 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-
-import lab.spark.SparkConfigService;
 
 public class MapAndFilter {
 	

@@ -1,4 +1,4 @@
-package lab.spark;
+package lab.spark.sample;
 
 import java.net.UnknownHostException;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package lab.spark;
+package lab.spark.sample;
 
 import java.net.UnknownHostException;
 
@@ -12,8 +12,10 @@ public class MapAndFilterTest extends CommonTestSetup {
 	
 	@Test
 	public void test1() throws UnknownHostException {
+	
+		this.javaSparkContext = sparkConfigService.getJavaSparkContext(getClass().getName());
 		MapAndFilter mapAndFilter = new MapAndFilter(); 
-		mapAndFilter.perform(sparkConfigService.getJavaSparkContext());		
+		mapAndFilter.perform(javaSparkContext);		
 	}
 
 	
