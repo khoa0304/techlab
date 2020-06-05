@@ -17,21 +17,24 @@ public class JavaTfIdf {
 
 		Tokenizer tokenizer = new Tokenizer().setInputCol("content").setOutputCol("words");
 		Dataset<Row> wordsData = tokenizer.transform(data);
-
+		//wordsData.show(false);
+		
 		int numFeatures = 20;
 		HashingTF hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures")
 				.setNumFeatures(numFeatures);
 
 		Dataset<Row> featurizedData = hashingTF.transform(wordsData);
 		// alternatively, CountVectorizer can also be used to get term frequency vectors
+		//featurizedData.show(false);
 
 		IDF idf = new IDF().setInputCol("rawFeatures").setOutputCol("features");
 		IDFModel idfModel = idf.fit(featurizedData);
 
 		Dataset<Row> rescaledData = idfModel.transform(featurizedData);
-		
-		Dataset<Row> finalDataset = rescaledData.select("file_name", "features");
-		finalDataset.show(1,false);
+		//rescaledData.show(false);
+	
+		Dataset<Row> finalDataset = rescaledData.select("words", "features");
+		//finalDataset.show(false);
 		
 		return finalDataset;
 	}

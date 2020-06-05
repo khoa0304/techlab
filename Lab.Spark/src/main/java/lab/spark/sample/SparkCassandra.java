@@ -1,11 +1,16 @@
 package lab.spark.sample;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.ml.Pipeline;
+import org.apache.spark.ml.PipelineModel;
+import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
@@ -17,8 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.spark.connector.japi.CassandraJavaUtil;
+import com.johnsnowlabs.nlp.DocumentAssembler;
+import com.johnsnowlabs.nlp.Finisher;
+import com.johnsnowlabs.nlp.annotators.LemmatizerModel;
+import com.johnsnowlabs.nlp.annotators.Normalizer;
+import com.johnsnowlabs.nlp.annotators.Tokenizer;
+import com.johnsnowlabs.nlp.annotators.sbd.pragmatic.SentenceDetector;
 
 import lab.spark.mllib.JavaTfIdf;
+import lab.spark.model.FileAndContent;
 
 
 public class SparkCassandra {
@@ -55,8 +67,15 @@ public class SparkCassandra {
 		JavaTfIdf javaTfIdf = new JavaTfIdf();
 		Dataset<Row> tfidfDataset = javaTfIdf.tFIdf(dataset, schema, spark);
 		
+		tfidfDataset.show(false);
+		//
+		configMap = configMap(keyspace, "document_tfidf", clusterName);
+		configMap.put("confirm.truncate", "true");
 
 		tfidfDataset.write().mode(SaveMode.Append).save("/opt/spark-data/tfidf");
+		
+		//tfidfDataset.write().format("org.apache.spark.sql.cassandra").options(configMap).mode(SaveMode.Append).saveAsTable("document_tfidf");
+		
 		
 		configMap = configMap(keyspace, "document_content", clusterName);
 		configMap.put("confirm.truncate", "true");
@@ -64,8 +83,6 @@ public class SparkCassandra {
 		
 		//dataset.createOrReplaceTempView("document_pdf_view");
 		//dataset = spark.sql("select file_name from document_pdf_view");
-		
-		
 	
 		return dataset;
 	}
@@ -88,6 +105,83 @@ public class SparkCassandra {
 	}
 	
 	
+	public Dataset<Row> processContentUsingSparkNLP(
+			SparkSession spark, String keyspace, String tableName,String clusterName,
+			String fileName) {
+
+		Map<String,String> configMap = configMap(keyspace, tableName, clusterName);
+		Dataset<Row> dataset = spark.read().format("org.apache.spark.sql.cassandra")
+				.options(configMap).load()
+				.select("file_name", "content").where("file_name = '"+fileName+"'");
+		
+		configMap = configMap(keyspace, "document_content", clusterName);
+		configMap.put("confirm.truncate", "true");
+		dataset.write().format("org.apache.spark.sql.cassandra").options(configMap).mode(SaveMode.Append).saveAsTable("document_content");
+	
+		DocumentAssembler document_assembler = 
+				(DocumentAssembler) new DocumentAssembler().setInputCol("content").setOutputCol("document");
+
+		SentenceDetector sentence_detector = 
+				(SentenceDetector) ((SentenceDetector) new SentenceDetector().setInputCols(new String[] {"document"})).setOutputCol("sentence");
+		
+		Tokenizer tokenizer = 
+				(Tokenizer)((Tokenizer) new Tokenizer().setInputCols(new String[] {"sentence"})).setOutputCol("token");
+
+		Normalizer normalizer = 
+				(Normalizer)((Normalizer) new Normalizer().setInputCols(new String[]{"token"})).setOutputCol("normalized");
+
+		LemmatizerModel lemmatizer = (LemmatizerModel)((LemmatizerModel) LemmatizerModel.pretrained("lemma_antbnc", "en", "public/models").setInputCols(new String[]{"normalized"})).setOutputCol("lemma");
+
+		Finisher finisher = 
+				new Finisher().setInputCols(new String[]{"document", "lemma"}).setOutputCols(new String[]{"document", "lemma"});
+
+		Pipeline pipeline = 
+				new Pipeline().setStages(new PipelineStage[]{document_assembler, sentence_detector, tokenizer, normalizer, lemmatizer, finisher});
+
+		// Fit the pipeline to training documents.
+		PipelineModel pipelineFit = pipeline.fit(dataset);
+		Dataset<Row> finalDataset = pipelineFit.transform(dataset);
+		return finalDataset;
+	}
+
+	public Dataset<String[]> processContent(
+			SparkSession spark, String keyspace, 
+			String tableName,String clusterName,String fileName) throws IOException {
+
+		Map<String,String> configMap = configMap(keyspace, tableName, clusterName);
+		
+		if(fileName !=null) {
+			
+			Dataset<FileAndContent> dataset = 
+					spark.read().format("org.apache.spark.sql.cassandra")
+					.options(configMap).load()
+					.select("file_name","content")
+					.where("file_name = '"+fileName+"'")
+					.as(Encoders.bean(FileAndContent.class));
+			
+			SparkOpenNLP sparkOpenNLP = new SparkOpenNLP();
+			Dataset<String[]> sentencesDataset = 
+					sparkOpenNLP.processContentUsingOpenkNLP(spark, dataset);
+			return sentencesDataset;
+		}
+		else {
+			
+			
+			Dataset<FileAndContent> dataset = 
+					spark.read().format("org.apache.spark.sql.cassandra")
+					.options(configMap).load()
+					.select("file_name","content")
+					.as(Encoders.bean(FileAndContent.class));
+			
+			SparkOpenNLP sparkOpenNLP = new SparkOpenNLP();
+			Dataset<String[]> sentencesDataset = 
+					sparkOpenNLP.processContentUsingOpenkNLP(spark, dataset);
+			return sentencesDataset;
+		}
+	
+	
+	}
+
 	public Map<String,String> configMap(String keyspace, String tableName,String clusterName){
 	
 		Map<String, String> configMap = new HashMap<>();

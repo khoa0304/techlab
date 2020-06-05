@@ -48,6 +48,18 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+<!-- 
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<excludes>
+					<exclude>**/opennlp/**</exclude>
+					<exclude>**/bin/**</exclude>
+				</excludes>
+			</resource>
+		</resources>
+ -->
 	</build>
 
 	<dependencyManagement>
@@ -134,16 +146,39 @@
 			<version>4.5.0</version>
 		</dependency>
 
-		<!-- Cassandra <dependency> <groupId>com.datastax.spark</groupId> <artifactId>spark-cassandra-connector-driver_2.11</artifactId> 
-			<version>2.5.0</version> </dependency> -->
+		<!-- https://mvnrepository.com/artifact/com.johnsnowlabs.nlp/spark-nlp -->
+		<dependency>
+			<groupId>com.johnsnowlabs.nlp</groupId>
+			<artifactId>spark-nlp_2.11</artifactId>
+			<version>2.5.1</version>
+		</dependency>
 
-
-		<!-- https://mvnrepository.com/artifact/org.apache.tinkerpop/gremlin-core -->
 		<dependency>
 			<groupId>org.apache.tinkerpop</groupId>
 			<artifactId>gremlin-core</artifactId>
 			<version>3.4.6</version>
 		</dependency>
+
+		<!-- OpenNLP -->
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-tools</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-uima</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.apache.opennlp</groupId> <artifactId>opennlp-morfologik-addon</artifactId> 
+			<version>1.9.2</version> </dependency> -->
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-brat-annotator</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+
 
 		<!-- TestNG -->
 
