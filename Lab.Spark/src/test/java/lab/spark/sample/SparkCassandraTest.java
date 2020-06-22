@@ -3,19 +3,17 @@ package lab.spark.sample;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
-import org.apache.spark.api.java.function.ForeachFunction;
-import org.apache.spark.api.java.function.ForeachPartitionFunction;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.apache.spark.storage.StorageLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.testng.annotations.Test;
 
 import lab.spark.config.CassandraConfig;
+import lab.spark.config.OpenNLPConfig;
+import lab.spark.model.SparkOpenNlpService;
 
 @SpringBootTest
 public class SparkCassandraTest extends CommonTestSetup {
@@ -27,8 +25,13 @@ public class SparkCassandraTest extends CommonTestSetup {
 	@Autowired
 	private CassandraConfig cassandraConfig;
 	
+	@Autowired
+	private OpenNLPConfig openNLPConfig;
+	
 	@Test
 	public void test1() throws IOException {
+		
+		SparkOpenNlpService sparkOpenNlpService = new SparkOpenNlpService();
 		
 		this.sparkSession = sparkConfigService.getSparkSessionForCassandra(getClass().getName());
 		
@@ -44,7 +47,9 @@ public class SparkCassandraTest extends CommonTestSetup {
 //				sparkCassandra.processContent(sparkSession, KEYSPACE, TABLE, cassandraConfig.getClusterName(),"UTResume.pdf.txt");
 		
 		Dataset<String[]> dataset3 = 
-				sparkCassandra.processContent(sparkSession, KEYSPACE, TABLE, cassandraConfig.getClusterName(),null);
+				sparkCassandra.processContent(
+						sparkSession,sparkOpenNlpService, openNLPConfig,
+						KEYSPACE, TABLE, cassandraConfig.getClusterName(),null);
 		
 		
 		dataset3.persist(StorageLevel.MEMORY_ONLY());

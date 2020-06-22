@@ -34,8 +34,7 @@ public class SparkConfigService {
 		SparkConf sparkConf = new SparkConf();
 		sparkConf.setAppName(className + ": " + simpleDateFormat.format(new Date()));
 		sparkConf
-				.setMaster("spark://" + sparkCommonConfig.getSpark_master_host() + ":"
-						+ sparkCommonConfig.getSpark_master_port())
+				.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
 				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
 				.setJars(new String[] { "target/lab-service-spark-0.0.1-SNAPSHOT.jar" });
 		return sparkConf;
@@ -43,14 +42,7 @@ public class SparkConfigService {
 
 	public SparkSession getSparkSession(String className) {
 
-		SparkSession sparkSession = SparkSession.builder()
-				.master("spark://" + sparkCommonConfig.getSpark_master_host() + ":"
-						+ sparkCommonConfig.getSpark_master_port())
-				.appName(className + ": " + simpleDateFormat.format(new Date()))
-				.config("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
-				.config("spark.executor.memory", "4g")
-				.config("spark.jars", "target/lab-service-spark-0.0.1-SNAPSHOT.jar").getOrCreate();
-
+		SparkSession sparkSession = getBasicSparkSessionBuilder(className).getOrCreate();
 		return sparkSession;
 	}
 
@@ -60,8 +52,7 @@ public class SparkConfigService {
 		SparkConf sparkConf = new SparkConf();
 		sparkConf.setAppName(className + ": " + simpleDateFormat.format(new Date()));
 		sparkConf
-				.setMaster("spark://" + sparkCommonConfig.getSpark_master_host() + ":"
-						+ sparkCommonConfig.getSpark_master_port())
+				.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
 				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.cassandra.connection.host", cassandraConfig.getContactPoints())
 				.set("spark.cassandra.connection.port", String.valueOf(cassandraConfig.getPort()))
@@ -74,19 +65,26 @@ public class SparkConfigService {
 
 	public SparkSession getSparkSessionForCassandra(String className) {
 
-		SparkSession sparkSession = SparkSession.builder()
-				.master("spark://" + sparkCommonConfig.getSpark_master_host() + ":"
-						+ sparkCommonConfig.getSpark_master_port())
-				.appName(className + ": " + simpleDateFormat.format(new Date()))
-				.config("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
-				.config("spark.executor.memory", "4g")
+		SparkSession sparkSession = getBasicSparkSessionBuilder(className)
 				.config("spark.cassandra.connection.host", cassandraConfig.getContactPoints())
 				.config("spark.cassandra.connection.port", String.valueOf(cassandraConfig.getPort()))
 				.config("spark.cassandra.auth.username", cassandraConfig.getUsername())
-				.config("spark.cassandra.auth.password", cassandraConfig.getPassword())
-				.config("spark.jars", "target/lab-service-spark-0.0.1-SNAPSHOT.jar").getOrCreate();
+				.config("spark.cassandra.auth.password", cassandraConfig.getPassword()).getOrCreate();
 
 		return sparkSession;
 	}
 
+	
+	private org.apache.spark.sql.SparkSession.Builder getBasicSparkSessionBuilder(String className){
+		
+		org.apache.spark.sql.SparkSession.Builder sparkSessionBuilder = SparkSession.builder()
+				.master("spark://"+ sparkCommonConfig.getSparkMasterHostPort())
+				.appName(className + ": " + simpleDateFormat.format(new Date()))
+				.config("spark.jars", "target/lab-service-spark-0.0.1-SNAPSHOT.jar")
+				.config("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
+				.config("spark.executor.memory", "4g");
+		
+		return sparkSessionBuilder;
+		
+	}
 }

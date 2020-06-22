@@ -1,4 +1,4 @@
-package lab.spark.model;
+package lab.spark.dto;
 
 import java.io.Serializable;
 
@@ -21,10 +21,4 @@ public class FileAndContent implements Serializable {
 	public void setContent(String content) {
 		this.content = content;
 	}
-	
-
-	
-	
-	
-	
 }

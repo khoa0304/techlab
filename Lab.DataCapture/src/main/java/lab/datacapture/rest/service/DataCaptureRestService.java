@@ -40,6 +40,13 @@ public class DataCaptureRestService {
 	
 	@Value("${cassandra.service.name}")
 	private String cassandraServiceName;
+	
+	@Value("${kafka.service.name}")
+	private String kafkaServiceName;
+
+	
+	@Value("${kafka.file.upload.publish.content.endpoint}")
+	private String kafkaFileUploadPublishContentEndPoint;
 
 	@Autowired
 	private FileResourceUtil fileResourceUtil;
@@ -81,6 +88,9 @@ public class DataCaptureRestService {
 			textFileDto.setFileNamePlusExtesion(newTextFile.getName());
 			
 			restTemplate.postForEntity("http://"+cassandraServiceName+"/save",
+					textFileDto ,String.class);
+		    
+			restTemplate.postForEntity("http://"+ kafkaServiceName + kafkaFileUploadPublishContentEndPoint ,
 					textFileDto ,String.class);
 		    
 			return new ResponseEntity<HttpStatus>(HttpStatus.ACCEPTED);

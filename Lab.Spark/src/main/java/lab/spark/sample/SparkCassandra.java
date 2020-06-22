@@ -29,8 +29,10 @@ import com.johnsnowlabs.nlp.annotators.Normalizer;
 import com.johnsnowlabs.nlp.annotators.Tokenizer;
 import com.johnsnowlabs.nlp.annotators.sbd.pragmatic.SentenceDetector;
 
+import lab.spark.config.OpenNLPConfig;
+import lab.spark.dto.FileAndContent;
 import lab.spark.mllib.JavaTfIdf;
-import lab.spark.model.FileAndContent;
+import lab.spark.model.SparkOpenNlpService;
 
 
 public class SparkCassandra {
@@ -99,11 +101,52 @@ public class SparkCassandra {
 			     " pushdown \"true\")";
 		spark.sql(createTempViewQuery);
 		Dataset<Row> dataset = spark.sql("select "+ columnName + " from temp where file_name = 'UTResume.pdf.txt'").toDF();
-	
+		
 		dataset.show();
 		return dataset;
 	}
 	
+
+	public Dataset<String[]> processContent(
+			SparkSession spark,
+			SparkOpenNlpService sparkOpenNLP,
+			OpenNLPConfig openNLPConfig,
+			String keyspace, 
+			String tableName,String clusterName,String fileName) throws IOException {
+
+		Map<String,String> configMap = configMap(keyspace, tableName, clusterName);
+		
+		if(fileName !=null) {
+			
+			Dataset<FileAndContent> dataset = 
+					spark.read().format("org.apache.spark.sql.cassandra")
+					.options(configMap).load()
+					.select("file_name","content")
+					.where("file_name = '"+fileName+"'")
+					.as(Encoders.bean(FileAndContent.class));
+			Dataset<String[]> sentencesDataset = 
+					sparkOpenNLP.processContentUsingOpenkNLP(
+							spark,openNLPConfig.getSentenceModel(), dataset);
+			return sentencesDataset;
+		}
+		else {
+			
+			
+			Dataset<FileAndContent> dataset = 
+					spark.read().format("org.apache.spark.sql.cassandra")
+					.options(configMap).load()
+					.select("file_name","content")
+					.as(Encoders.bean(FileAndContent.class));
+			
+			Dataset<String[]> sentencesDataset = 
+					sparkOpenNLP.processContentUsingOpenkNLP(
+							spark,openNLPConfig.getSentenceModel(), dataset);
+			return sentencesDataset;
+			
+		}
+	
+	
+	}
 	
 	public Dataset<Row> processContentUsingSparkNLP(
 			SparkSession spark, String keyspace, String tableName,String clusterName,
@@ -142,44 +185,6 @@ public class SparkCassandra {
 		PipelineModel pipelineFit = pipeline.fit(dataset);
 		Dataset<Row> finalDataset = pipelineFit.transform(dataset);
 		return finalDataset;
-	}
-
-	public Dataset<String[]> processContent(
-			SparkSession spark, String keyspace, 
-			String tableName,String clusterName,String fileName) throws IOException {
-
-		Map<String,String> configMap = configMap(keyspace, tableName, clusterName);
-		
-		if(fileName !=null) {
-			
-			Dataset<FileAndContent> dataset = 
-					spark.read().format("org.apache.spark.sql.cassandra")
-					.options(configMap).load()
-					.select("file_name","content")
-					.where("file_name = '"+fileName+"'")
-					.as(Encoders.bean(FileAndContent.class));
-			
-			SparkOpenNLP sparkOpenNLP = new SparkOpenNLP();
-			Dataset<String[]> sentencesDataset = 
-					sparkOpenNLP.processContentUsingOpenkNLP(spark, dataset);
-			return sentencesDataset;
-		}
-		else {
-			
-			
-			Dataset<FileAndContent> dataset = 
-					spark.read().format("org.apache.spark.sql.cassandra")
-					.options(configMap).load()
-					.select("file_name","content")
-					.as(Encoders.bean(FileAndContent.class));
-			
-			SparkOpenNLP sparkOpenNLP = new SparkOpenNLP();
-			Dataset<String[]> sentencesDataset = 
-					sparkOpenNLP.processContentUsingOpenkNLP(spark, dataset);
-			return sentencesDataset;
-		}
-	
-	
 	}
 
 	public Map<String,String> configMap(String keyspace, String tableName,String clusterName){
