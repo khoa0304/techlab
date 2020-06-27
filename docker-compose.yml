@@ -33,7 +33,7 @@ services:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.6
       kafkadocker_default:
-      sparkdockersetup_default
+      sparkdockersetup_default:
     ports:
       - 11517:11517
       - 4447:4444
