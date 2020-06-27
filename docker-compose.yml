@@ -1,6 +1,65 @@
 version: '3'
 services:
-
+  data-capture:
+    build: ./Lab.DataCapture
+    container_name: data-capture-service
+    hostname: 10.15.1.3
+    environment:
+      - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
+      - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
+      - "server.port=11513"
+    networks:
+      cluster1_cassandra-network:
+      labdiscoveryservice_microservice:
+        ipv4_address: 10.15.1.3
+    volumes:
+      - /tmp:/home/khoa
+    ports:
+     - 11513:11513
+     - 4443:4444
+    expose:
+     - "11513"
+     
+  cassandra:
+    build: ./Lab.Cassandra
+    container_name: cassandra-service
+    hostname: 10.15.1.4
+    environment:
+      - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
+      - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
+      - "server.port=11514"
+    networks:
+      cluster1_cassandra-network:
+      labdiscoveryservice_microservice:
+        ipv4_address: 10.15.1.4
+    volumes:
+      - /tmp:/home/khoa
+    ports:
+     - 11514:11514
+     - 4444:4444
+    expose:
+      - "11514"
+      
+  ui:
+    build: ./Lab.UI
+    container_name: ui-service
+    hostname: 10.15.1.5
+    environment:
+      - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
+      - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
+      - "server.port=11515"
+    networks:
+      cluster1_cassandra-network:
+      labdiscoveryservice_microservice:
+        ipv4_address: 10.15.1.5
+    ports:
+      - 11515:11515
+      - 4445:4444
+    volumes:
+      - /tmp:/home/khoa
+    expose:
+      - "11515"
+      
   kafka:
     build: ./Lab.Kafka
     container_name: kafka-service
