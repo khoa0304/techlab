@@ -45,7 +45,7 @@ public class KafkaEventConsumer implements Callable<Void>{
 		while (!isStopped) {
 			ConsumerRecords<Long, String> records = consumer.poll(Duration.ofMinutes(1));
 			for (ConsumerRecord<Long, String> record : records)
-				System.out.printf("offset = %d, key = %s, value = %s\n", record.offset(), record.key(), record.value());
+				System.out.printf("received - offset = %d, key = %s, value = %s\n", record.offset(), record.key(), record.value());
 		}
 		
 		return null;

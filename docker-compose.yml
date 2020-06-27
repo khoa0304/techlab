@@ -12,6 +12,7 @@ services:
     networks:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.6
+      kafkadocker_default:
     ports:
       - 11516:11516
       - 4446:4444
@@ -20,8 +21,33 @@ services:
     expose:
       - "11516"
       
+  spark:
+    build: ./Lab.Spark
+    container_name: spark-service
+    hostname: 10.15.1.7
+    environment:
+      - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
+      - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
+      - "server.port=11517"
+    networks:
+      labdiscoveryservice_microservice:
+        ipv4_address: 10.15.1.6
+      kafkadocker_default:
+      sparkdockersetup_default
+    ports:
+      - 11517:11517
+      - 4447:4444
+    volumes:
+      - /tmp:/home/khoa
+    expose:
+      - "11517"
+      
 networks:
   labdiscoveryservice_microservice:
     external: true
   cluster1_cassandra-network:
     external: true
+  kafkadocker_default:
+  	external: true
+  sparkdockersetup_default:
+  	external: true
