@@ -23,6 +23,7 @@
 		<module>Lab.DataCapture</module>
 		<module>Lab.Cassandra</module>
 		<module>Lab.UI</module>
+		<module>Lab.Kafka</module>
 	</modules>
 
 	<build>
