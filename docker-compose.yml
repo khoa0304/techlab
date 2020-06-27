@@ -31,7 +31,7 @@ services:
       - "server.port=11517"
     networks:
       labdiscoveryservice_microservice:
-        ipv4_address: 10.15.1.6
+        ipv4_address: 10.15.1.7
       kafkadocker_default:
       sparkdockersetup_default:
     ports:
