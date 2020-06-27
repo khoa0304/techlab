@@ -48,6 +48,6 @@ networks:
   cluster1_cassandra-network:
     external: true
   kafkadocker_default:
-  	external: true
+    external: true
   sparkdockersetup_default:
-  	external: true
+    external: true
