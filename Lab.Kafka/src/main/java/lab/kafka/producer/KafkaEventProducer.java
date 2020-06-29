@@ -12,7 +12,6 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lab.kafka.config.KafkaConfig;
 import lab.kafka.config.TopicCreationService;
 import lab.kafka.dto.FileContentDTO;
+
 
 @Service
 public class KafkaEventProducer {
@@ -41,8 +41,7 @@ public class KafkaEventProducer {
 	public final static String BOOTSTRAP_SERVERS =
 			// "10.16.1.2:9092,localhost:9093,localhost:9094";
 			"10.16.1.2:9092";
-	
-	private final ObjectMapper objectMapper = new ObjectMapper();
+
 
 	private KafkaProducer<String, String> kafkaProducer;
 	
@@ -73,12 +72,12 @@ public class KafkaEventProducer {
 		kafkaProducer.close();
 	}
 	
-	public Producer<Long, String> createProducer(String kafkaServer) {
+	public Producer<String, String> createProducer(String kafkaServer) {
 		Properties props = new Properties();
 		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
 		props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaFileUploadProducer");
-		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
-		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 		return new KafkaProducer<>(props);
 	}
 	
@@ -87,7 +86,7 @@ public class KafkaEventProducer {
 	
 		RecordMetadata metadata;
 		try {
-	
+			ObjectMapper objectMapper = new ObjectMapper();
 			String message = objectMapper.writeValueAsString(fileContentDTO);
 			
 			final ProducerRecord<String, String> record = 

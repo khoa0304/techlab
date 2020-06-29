@@ -4,6 +4,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.producer.Producer;
@@ -55,13 +56,13 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 		ExecutorService scheduledExecutor = Executors.newSingleThreadExecutor();
 		scheduledExecutor.submit(kafkaEventConsumer);
 		
-		Producer<Long, String> producer = kafkaEventProducer.createProducer(kafkaServerList);
+		Producer<String, String> producer = kafkaEventProducer.createProducer(kafkaServerList);
 		long time = System.currentTimeMillis();
 
 		try {
 			for (long index = time; index < time + 10; index++) {
-				final ProducerRecord<Long, String> record = 
-						new ProducerRecord<>(TOPIC_NAME, index,"Hello World " + index);
+				final ProducerRecord<String, String> record = 
+						new ProducerRecord<>(TOPIC_NAME, String.valueOf(index),"Hello World " + index);
 
 				RecordMetadata metadata = producer.send(record).get();
 
@@ -80,4 +81,30 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 		}
 	}
 
+	@Test
+	public void testReadFromFileUploadedTopic() {
+		
+		String kafkaServerList = kafkaConfig.getKafkaServerList();
+		String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
+
+		Properties config = new Properties();
+		config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServerList);
+		
+		topicCreationService.createKafkaTopic(
+				kafkaConfig.getZookeeperServerList(), topicName, topicName, topicName);
+		
+		KafkaEventConsumer kafkaEventConsumer = new KafkaEventConsumer();
+		kafkaEventConsumer.createConsumer(kafkaServerList,topicName, topicName);
+		
+		ExecutorService scheduledExecutor = Executors.newSingleThreadExecutor();
+		Future<Void> future = scheduledExecutor.submit(kafkaEventConsumer);
+		try {
+			future.get();
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("End");
+	}
 }

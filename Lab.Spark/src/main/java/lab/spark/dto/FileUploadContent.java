@@ -9,6 +9,14 @@ public class FileUploadContent implements Serializable {
 	private String fileName;
 	private String fileContent;
 	
+	public FileUploadContent() {};
+	
+//	public FileUploadContent(String fileName, String fileContent) {
+//		this.fileName = fileName;
+//		this.fileContent = fileContent;
+//	};
+	
+	
 	public String getFileName() {
 		return fileName;
 	}
@@ -20,5 +28,9 @@ public class FileUploadContent implements Serializable {
 	}
 	public void setFileContent(String fileContent) {
 		this.fileContent = fileContent;
+	}
+	@Override
+	public String toString() {
+		return "FileUploadContent [fileName=" + fileName + ", fileContent=" + fileContent + "]";
 	}
 }

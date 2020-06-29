@@ -17,4 +17,9 @@ public class FileContentDTO {
 	public void setFileContent(String fileContent) {
 		this.fileContent = fileContent;
 	}
+	
+	@Override
+	public String toString() {
+		return "FileContentDTO [fileName=" + fileName + ", fileContent=" + fileContent + "]";
+	}
 }
