@@ -81,7 +81,7 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 		}
 	}
 
-	@Test
+	@Test(enabled=false)
 	public void testReadFromFileUploadedTopic() {
 		
 		String kafkaServerList = kafkaConfig.getKafkaServerList();

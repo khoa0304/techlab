@@ -33,7 +33,7 @@ public class TestUsingKeystore {
 	
 	String charSet = "UTF-8";
 
-	@Test
+	@Test(enabled=false)
 	public void testEncryptionDecryption() throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
 			IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException, NoSuchProviderException {
