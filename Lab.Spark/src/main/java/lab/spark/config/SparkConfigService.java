@@ -4,6 +4,9 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang.SystemUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -21,6 +24,19 @@ public class SparkConfigService {
 	@Autowired
 	private CassandraConfig cassandraConfig;
 
+	private String jarLocation = null;
+	
+	@PostConstruct
+	public void init() {
+		
+		if(!SystemUtils.IS_OS_WINDOWS) {
+			jarLocation="./Lab.Spark/target/lab-service-spark-0.0.1-SNAPSHOT.jar";
+		}
+		else {
+			jarLocation="target/lab-service-spark-0.0.1-SNAPSHOT.jar";
+		}
+	}
+	
 	public JavaSparkContext getJavaSparkContext(String className) throws UnknownHostException {
 		SparkSession sparkSession = getSparkSession(className);
 		JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
@@ -36,7 +52,7 @@ public class SparkConfigService {
 		sparkConf
 				.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
 				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
-				.setJars(new String[] { "target/lab-service-spark-0.0.1-SNAPSHOT.jar" });
+				.setJars(new String[] { jarLocation });
 		return sparkConf;
 	}
 
@@ -58,7 +74,7 @@ public class SparkConfigService {
 				.set("spark.cassandra.connection.port", String.valueOf(cassandraConfig.getPort()))
 				.set("spark.cassandra.auth.username", cassandraConfig.getUsername())
 				.set("spark.cassandra.auth.password", cassandraConfig.getPassword())
-				.setJars(new String[] { "target/lab-service-spark-0.0.1-SNAPSHOT.jar" });
+				.setJars(new String[] { jarLocation });
 
 		return sparkConf;
 	}
@@ -80,7 +96,7 @@ public class SparkConfigService {
 		org.apache.spark.sql.SparkSession.Builder sparkSessionBuilder = SparkSession.builder()
 				.master("spark://"+ sparkCommonConfig.getSparkMasterHostPort())
 				.appName(className + ": " + simpleDateFormat.format(new Date()))
-				.config("spark.jars", "target/lab-service-spark-0.0.1-SNAPSHOT.jar")
+				.config("spark.jars", jarLocation)
 				.config("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
 				.config("spark.executor.memory", "4g");
 		
