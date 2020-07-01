@@ -1,5 +1,6 @@
 package lab.spark.config;
 
+import java.io.File;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,8 +30,10 @@ public class SparkConfigService {
 	@PostConstruct
 	public void init() {
 		
+		File file = new File(".");
+		System.out.println("=====> Current Loc " + file.getAbsolutePath());
 		if(!SystemUtils.IS_OS_WINDOWS) {
-			jarLocation="./Lab.Spark/target/lab-service-spark-0.0.1-SNAPSHOT.jar";
+			jarLocation="Lab.Spark/target/lab-service-spark-0.0.1-SNAPSHOT.jar";
 		}
 		else {
 			jarLocation="target/lab-service-spark-0.0.1-SNAPSHOT.jar";
