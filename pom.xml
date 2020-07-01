@@ -20,10 +20,12 @@
 		<!-- DO NOT include Lab.Common as Common Project is not a spring boot application.
 		<module>Lab.Common</module>
 		 -->
-		<module>Lab.DataCapture</module>
-		<module>Lab.Cassandra</module>
-		<module>Lab.UI</module>
 		<module>Lab.Kafka</module>
+		<module>Lab.Spark</module>
+		<module>Lab.Cassandra</module>
+		<module>Lab.DataCapture</module>
+		<module>Lab.UI</module>
+		
 	</modules>
 
 	<build>
