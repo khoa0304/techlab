@@ -98,6 +98,7 @@ services:
       - 4447:4444
     volumes:
       - /tmp:/home/khoa
+      - /home/khoa/git/spark-docker-setup/data:/opt/spark-data
     expose:
       - "11517"
       
