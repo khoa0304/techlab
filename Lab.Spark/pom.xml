@@ -49,7 +49,7 @@
 						<archive>
 							<manifest>
 								<addClasspath>false</addClasspath>
-								<mainClass>Lab.SparkSpringBootApplication</mainClass>
+								<mainClass>lab.SparkSpringBootApplication</mainClass>
 								<classpathPrefix>dependency-jars/</classpathPrefix>
 							</manifest>
 						</archive>
