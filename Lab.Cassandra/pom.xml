@@ -34,7 +34,7 @@
 					<executions>
 						<execution>
 							<configuration>
-								<mainClass>Lab.CassandraMainService</mainClass>
+								<mainClass>lab.CassandraMainService</mainClass>
 							</configuration>
 						</execution>
 					</executions>

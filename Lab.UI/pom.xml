@@ -40,7 +40,7 @@
 					<executions>
 						<execution>
 							<configuration>
-								<mainClass>Lab.MainUIApplication</mainClass>
+								<mainClass>lab.MainUIApplication</mainClass>
 							</configuration>
 						</execution>
 					</executions>

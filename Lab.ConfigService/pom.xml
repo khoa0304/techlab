@@ -39,7 +39,7 @@
 					<executions>
 						<execution>
 							<configuration>
-								<mainClass>Lab.ConfigApplication</mainClass>
+								<mainClass>lab.ConfigApplication</mainClass>
 							</configuration>
 						</execution>
 					</executions>

@@ -32,7 +32,7 @@
 					<executions>
 						<execution>
 							<configuration>
-								<mainClass>Lab.DataCaptureMain</mainClass>
+								<mainClass>lab.DataCaptureMain</mainClass>
 							</configuration>
 						</execution>
 					</executions>

@@ -33,7 +33,7 @@ public class SparkConfigService {
 		File file = new File(".");
 		System.out.println("=====> Current Loc " + file.getAbsolutePath());
 		if(!SystemUtils.IS_OS_WINDOWS) {
-			jarLocation="/app.jar";
+			jarLocation="/lab-service-spark-0.0.1-SNAPSHOT.jar";
 		}
 		else {
 			jarLocation="target/lab-service-spark-0.0.1-SNAPSHOT.jar";
