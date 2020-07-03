@@ -10,10 +10,10 @@ services:
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
       - "server.port=11517"
     networks:
-      sparkdockersetup_default:
       labdiscoveryservice_microservice:
         ipv4_address: 10.15.1.7
       kafkadocker_default:
+      sparkdockersetup_default:
      
     ports:
       - 11517:11517
