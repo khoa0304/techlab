@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,10 +22,10 @@ import lab.kafka.dto.FileContentDTO;
 import lab.kafka.producer.KafkaEventProducer;
 
 @RestController
-@RequestMapping("/kafka/producer")
-public class FileUploadRestService {
+@RequestMapping("/fileUpload")
+public class KafkaFileUploadRestService {
 
-	private Logger logger = LoggerFactory.getLogger(FileUploadRestService.class);
+	private Logger logger = LoggerFactory.getLogger(KafkaFileUploadRestService.class);
 	
 	@Autowired
 	private FileResourceUtil fileResourceUtil;
@@ -31,7 +33,14 @@ public class FileUploadRestService {
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 	
-	@PostMapping(path = "/fileUpload",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	
+	@GetMapping("/ping")
+	@ResponseBody
+	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
+		return " Kafka Service responds " + name;
+	}	
+	
+	@PostMapping(path = "/kafka/producer",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public ResponseEntity<HttpStatus> savePdfToCassandra(@RequestBody DocumentDto documentDto) {
 

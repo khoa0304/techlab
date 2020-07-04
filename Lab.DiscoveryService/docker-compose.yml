@@ -3,7 +3,7 @@ services:
   discovery:
     build: .
     container_name: service-discovery
-    hostname: discovery
+    hostname: service-discovery
     environment:
       - JAVA_OPTS=-Xmx1g
     networks:

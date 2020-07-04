@@ -51,20 +51,29 @@ public class DataCaptureRestService {
 	@Autowired
 	private FileResourceUtil fileResourceUtil;
 	
-	@GetMapping("/check")
+	@GetMapping("/ping")
 	@ResponseBody
-	public ResponseEntity<String> check(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
+	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
+		return " Data Capture Service responds " + name;
+	}	
+	
+	
+	@GetMapping("/cassandra")
+	@ResponseBody
+	public ResponseEntity<String> cassandraCheck(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
 		 return restTemplate
 	                .exchange("http://"+cassandraServiceName+"/ping?name=" +  name,
 	                		HttpMethod.GET, null,String.class);
 	}
 	
 	
-	@GetMapping("/ping")
+	@GetMapping("/kafka")
 	@ResponseBody
-	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
-		return " Data Capture Service responds " + name;
-	}	
+	public ResponseEntity<String> kafkaCheck(@RequestParam(name = "name", required = false, defaultValue = "From Data Capture") String name) {
+		return restTemplate.exchange("http://"+ kafkaServiceName +"/fileUpload/ping?name=" +  name,
+        		HttpMethod.GET, null,String.class);
+	}
+	
 	
 	
 	@PostMapping(path = "/pdf/store",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
