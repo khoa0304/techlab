@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
@@ -45,7 +47,7 @@ public class FileUploadContentConsumerService {
 
 	private ExecutorService executorService = Executors.newCachedThreadPool();
 
-	@Autowired
+	@PostConstruct
 	private void initialize() {
 		fileUploadContentSchema =
 
@@ -66,12 +68,12 @@ public class FileUploadContentConsumerService {
 //			}
 //		});
 
-		try {
-			String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
-			new FileUploadConsumerTestTask(sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()),getKafkMapProperties(topicName),topicName);
-		} catch (UnknownHostException | InterruptedException e) {
-			logger.warn("", e);
-		} 
+//		try {
+//			String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
+//			new FileUploadConsumerTestTask(sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()),getKafkMapProperties(topicName),topicName);
+//		} catch (UnknownHostException | InterruptedException e) {
+//			logger.warn("", e);
+//		} 
 	}
 
 	private void processFileUpload(SparkSession spark) throws StreamingQueryException {
