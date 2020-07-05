@@ -19,7 +19,7 @@ public class SparkRestService {
 	@ResponseBody
 	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
 		logger.info("Spark Rest Service got ping.");
-		return " Kafka Service responds " + name;
+		return " Spark Service responds " + name;
 	}	
 	
 

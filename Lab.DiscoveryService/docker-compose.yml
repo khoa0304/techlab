@@ -7,7 +7,8 @@ services:
     environment:
       - JAVA_OPTS=-Xmx1g
     networks:
-      microservice:
+      microservice_network:
+        name:aa1_microservice_network
         ipv4_address: 10.15.1.1
     ports:
       - 18761:18761
@@ -23,7 +24,7 @@ services:
     expose:
        - "11512"  
 networks:
-  microservice:
+  microservice_network:
     driver: bridge
     ipam:
       config:
