@@ -1,10 +1,11 @@
 package lab.spark.kafka.consumer;
 
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -45,8 +46,6 @@ public class FileUploadContentConsumerService {
 
 	private StructType fileUploadContentSchema;
 
-	private ExecutorService executorService = Executors.newCachedThreadPool();
-
 	@PostConstruct
 	private void initialize() {
 		fileUploadContentSchema =
@@ -55,25 +54,8 @@ public class FileUploadContentConsumerService {
 						new StructField[] { DataTypes.createStructField("fileName", DataTypes.StringType, false),
 								DataTypes.createStructField("fileContent", DataTypes.StringType, false) });
 
-//		executorService.submit(new Runnable() {
-//
-//			@Override
-//			public void run() {
-//				try {
-//					//processFileUpload(sparkConfigService.getSparkSession(FileUploadContentConsumer.class.getName()));
-//					processFileUpload(sparkConfigService.getSparkConfig(FileUploadContentConsumer.class.getName()));
-//				} catch (UnknownHostException | InterruptedException e) {
-//					logger.warn("", e);
-//				}
-//			}
-//		});
+		startSparkKafkaStreaming();
 
-//		try {
-//			String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
-//			new FileUploadConsumerTestTask(sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()),getKafkMapProperties(topicName),topicName);
-//		} catch (UnknownHostException | InterruptedException e) {
-//			logger.warn("", e);
-//		} 
 	}
 
 	private void processFileUpload(SparkSession spark) throws StreamingQueryException {
@@ -99,7 +81,31 @@ public class FileUploadContentConsumerService {
 		query.awaitTermination();
 	}
 
-	
+	public void startSparkKafkaStreaming() {
+
+		final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+
+			@Override
+			public Thread newThread(Runnable r) {
+
+				Thread t = Executors.defaultThreadFactory().newThread(r);
+				t.setDaemon(true);
+				t.setName("Spark-Kafka-Consumer-");
+				return t;
+
+				
+			}
+		});
+				
+		String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
+		KafkaConsumerTask kafkaConsumerTask = new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName), topicName);
+		
+		scheduledExecutorService.schedule(kafkaConsumerTask,30,TimeUnit.SECONDS);
+		
+		logger.info("Finished scheduling Spark-Kafka Consumer for streaming from topic {} ",topicName);
+
+	}
+
 	private Map<String, Object> getKafkMapProperties(String topicName) {
 
 		Map<String, Object> kafkaParams = new HashMap<>();
@@ -109,10 +115,10 @@ public class FileUploadContentConsumerService {
 		kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.StringDeserializer");
 		kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, topicName);
-		//kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+		// kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 		kafkaParams.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
-		
+
 		return kafkaParams;
-		
+
 	}
 }
