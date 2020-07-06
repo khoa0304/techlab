@@ -7,7 +7,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx1g
     networks:
-      aaa_lab_network:
+      aaa_lab_network_10.x:
         ipv4_address: 10.15.1.1
     ports:
       - 18761:18761
@@ -18,10 +18,10 @@ services:
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
     networks:
-      aaa_lab_network:
+      aaa_lab_network_10.x:
         ipv4_address: 10.15.1.2
     expose:
        - "11512"  
 networks:
-  aaa_lab_network:
+  aaa_lab_network_10.x:
     external: true
