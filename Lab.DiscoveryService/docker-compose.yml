@@ -7,7 +7,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx1g
     networks:
-      a_microservice:
+      aa1_discovery:
         ipv4_address: 10.15.1.1
     ports:
       - 18761:18761
@@ -18,13 +18,10 @@ services:
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
     networks:
-      a_microservice:
+      aa1_discovery:
         ipv4_address: 10.15.1.2
     expose:
        - "11512"  
 networks:
-  a_microservice:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.15.0.0/16
+  aa1_discovery:
+    external: true
