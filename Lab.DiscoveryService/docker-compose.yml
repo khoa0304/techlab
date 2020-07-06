@@ -9,7 +9,7 @@ services:
     networks:
       microservice_network:
         name:aa1_microservice_network
-        ipv4_address: 10.15.1.1
+        #ipv4_address: 10.15.1.1
     ports:
       - 18761:18761
   config:
@@ -21,7 +21,7 @@ services:
     networks:
       microservice_network:
       	name:aa1_microservice_network
-        ipv4_address: 10.15.1.2
+        #ipv4_address: 10.15.1.2
     expose:
        - "11512"  
 networks:
