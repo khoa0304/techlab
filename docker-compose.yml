@@ -10,9 +10,8 @@ services:
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
       - "server.port=11516"
     networks:
-      labdiscoveryservice_microservice:
+      aaa_lab_network_10_x:
         ipv4_address: 10.15.1.6
-      kafkadocker_default:
     ports:
       - 11516:11516
       - 4446:4444
@@ -30,12 +29,8 @@ services:
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
       - "server.port=11517"
     networks:
-      labdiscoveryservice_microservice:
+      aaa_lab_network_10_x:
         ipv4_address: 10.15.1.7
-      kafkadocker_default:
-      sparkdockersetup_default:
-      cluster1_cassandra-network:
-     
     ports:
       - 11517:11517
       - 4447:4444
@@ -46,11 +41,5 @@ services:
       - "11517"
       
 networks:
-  labdiscoveryservice_microservice:
-    external: true
-  cluster1_cassandra-network:
-    external: true
-  kafkadocker_default:
-    external: true
-  sparkdockersetup_default:
+  aaa_lab_network_10_x:
     external: true
