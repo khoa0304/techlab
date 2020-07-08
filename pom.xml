@@ -19,9 +19,12 @@
 	<modules>
 		<!-- DO NOT include Lab.Common as Common Project is not a spring boot application.
 		<module>Lab.Common</module>
+		
+		Kafka will be built together with spark in build-kafka-spark.sh
+		<module>Lab.Kafka</module>
 		 -->
 		
-		<module>Lab.Kafka</module>
+		
 		<module>Lab.Cassandra</module>
 		<module>Lab.DataCapture</module>
 		<module>Lab.UI</module>
