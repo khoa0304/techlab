@@ -23,7 +23,7 @@ services:
   spark:
     build: ./Lab.Spark
     container_name: spark-service
-    hostname: 10.15.1.7
+    hostname: spark-service
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
