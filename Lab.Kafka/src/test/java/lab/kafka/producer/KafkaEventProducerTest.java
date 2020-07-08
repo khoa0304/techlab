@@ -37,7 +37,7 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 	@Autowired
 	private TopicCreationService topicCreationService;
 
-	public static final String TOPIC_NAME = "Test-Topic";
+	public static final String TOPIC_NAME = "Text-File-Upload-Topic";
 	
 	@Test
 	public void testProducer1() throws InterruptedException, ExecutionException {

@@ -114,7 +114,7 @@ public class FileUploadContentConsumerService {
 				"org.apache.kafka.common.serialization.StringDeserializer");
 		kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.StringDeserializer");
-		kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, topicName);
+		kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, topicName +"- SparkGroup");
 		// kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 		kafkaParams.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
 

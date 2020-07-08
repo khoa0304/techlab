@@ -1,44 +1,61 @@
 version: '3'
 services:
-      
-  kafka:
-    build: ./Lab.Kafka
-    container_name: kafka-service
-    hostname: 10.15.1.6
+  data-capture:
+    build: ./Lab.DataCapture
+    container_name: data-capture-service
+    hostname: 10.15.1.3
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
-      - "server.port=11516"
+      - "server.port=11513"
     networks:
       aaa_lab_network_10_x:
-        ipv4_address: 10.15.1.6
-    ports:
-      - 11516:11516
-      - 4446:4444
+        ipv4_address: 10.15.1.3
     volumes:
       - /tmp:/home/khoa
+    ports:
+     - 11513:11513
+     - 4443:4444
     expose:
-      - "11516"
-      
-  spark:
-    build: ./Lab.Spark
-    container_name: spark-service
-    hostname: spark-service
+     - "11513"
+     
+  cassandra:
+    build: ./Lab.Cassandra
+    container_name: cassandra-service
+    hostname: 10.15.1.4
     environment:
       - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
       - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
-      - "server.port=11517"
+      - "server.port=11514"
     networks:
       aaa_lab_network_10_x:
-        ipv4_address: 10.15.1.7
-    ports:
-      - 11517:11517
-      - 4447:4444
+        ipv4_address: 10.15.1.4
     volumes:
       - /tmp:/home/khoa
-      - /home/khoa/git/spark-docker-setup/data:/opt/spark-data
+    ports:
+     - 11514:11514
+     - 4444:4444
     expose:
-      - "11517"
+      - "11514"
+      
+  ui:
+    build: ./Lab.UI
+    container_name: ui-service
+    hostname: 10.15.1.5
+    environment:
+      - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
+      - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
+      - "server.port=11515"
+    networks:
+      aaa_lab_network_10_x:
+        ipv4_address: 10.15.1.5
+    ports:
+      - 11515:11515
+      - 4445:4444
+    volumes:
+      - /tmp:/home/khoa
+    expose:
+      - "11515"      
       
 networks:
   aaa_lab_network_10_x:
