@@ -79,10 +79,6 @@ public class DataCaptureRestService {
 	@PostMapping(path = "/pdf/store",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public ResponseEntity<HttpStatus> parsePdf(@RequestBody DocumentDto documentDto) {
-	
-		RandomAccessFile randomAccessFile = null;
-		FileChannel rwChannel = null;
-		
 		try {
 			
 			final File file = new File(documentDto.getAbsoluteFilePath());
@@ -107,27 +103,6 @@ public class DataCaptureRestService {
 		} catch (IOException e) {
 			logger.error("{}",e);
 			return new ResponseEntity<HttpStatus>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-		finally{
-		
-			if(randomAccessFile != null) {
-				try {
-					randomAccessFile.close();
-					
-					if(rwChannel != null) {
-						try {
-							rwChannel.close();
-						} catch (IOException e) {
-							logger.error(e.toString());
-						}
-					}
-					
-				} catch (IOException e) {
-					logger.error(e.toString());
-				}
-			}
-			
 		}
 	}
 	
