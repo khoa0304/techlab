@@ -2,6 +2,7 @@ package lab.spark.kafka.consumer;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -29,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lab.spark.dto.FileUploadContent;
+import lab.spark.model.SparkOpenNlpProcessor;
+import opennlp.tools.sentdetect.SentenceModel;
 
 public class FileUploadConsumerTestTask implements Serializable {
 
@@ -37,13 +40,31 @@ public class FileUploadConsumerTestTask implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private SparkOpenNlpProcessor sparkOpenNLP;
+	private SentenceModel sentenceModel;
 
-	public FileUploadConsumerTestTask(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
+	public FileUploadConsumerTestTask(
+			SparkConf sparkConfig, 
+			Map<String, Object> configMap, 
+			String topicName,
+			SparkOpenNlpProcessor sparkOpenNLP,
+			SentenceModel openNLPConfig)
 			throws InterruptedException {
-		processFileUpload(sparkConfig, configMap, topicName);
+		
+		this.sparkOpenNLP = sparkOpenNLP;
+		this.sentenceModel = openNLPConfig;
+		
+		try {
+			processFileUpload(sparkConfig, configMap, topicName);	
+		}catch(Exception e) {
+			logger.error("", e);
+		}
+		
 	}
 
-	public void processFileUpload(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
+	
+	private void processFileUpload(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
 			throws InterruptedException {
 
 		JavaStreamingContext jssc = new JavaStreamingContext(sparkConfig, Durations.seconds(15));
@@ -69,6 +90,8 @@ public class FileUploadConsumerTestTask implements Serializable {
 			}
 		});
 		
+		
+	
 		lines.foreachRDD(new VoidFunction<JavaRDD<FileUploadContent>>() {
 
 			private static final long serialVersionUID = 1L;
@@ -82,10 +105,7 @@ public class FileUploadConsumerTestTask implements Serializable {
 								DataTypes.createStructField("FileContent", DataTypes.StringType, true)});
 
 				JavaRDD<Row> rowRDD = rdd.map(new Function<FileUploadContent, Row>() {
-
-					/**
-					 * 
-					 */
+				
 					private static final long serialVersionUID = 1L;
 
 					@Override
@@ -97,19 +117,32 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 				SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
 
-				Dataset<Row> msgDataFrame = sparkSession.createDataFrame(rowRDD,schema);
+				Dataset<Row> msgDataFrame = sparkSession.createDataFrame(rowRDD, schema);
 				long count = msgDataFrame.count();
+				
 				if(count > 0) {
 					logger.info("\n\n\n\n===================================");
 					logger.info("======> Dataset Size: "+ count);
 					logger.info("\n\n\n\n===================================");
-					msgDataFrame.show();	
-				}
 				
-
+					Dataset<String[]> sentencesDataset = 
+							sparkOpenNLP.processContentUsingOpenkNLP(
+									sparkSession,sentenceModel, msgDataFrame);
+					
+					List<String[]> list = sentencesDataset.collectAsList();
+					
+					for(String[] sentences : list) {
+						System.out.println("\n\n=============================================");
+						
+						System.out.println("Number of sentences: "+ sentences.length);
+						Arrays.stream(sentences).forEach(num -> System.out.println(num));
+						System.out.println("=============================================");
+					}
+				}
 			}
 		});
 
+		
 
 		jssc.start();
 		jssc.awaitTermination();

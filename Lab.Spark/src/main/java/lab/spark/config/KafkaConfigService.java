@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class KafkaConfig {
+public class KafkaConfigService {
 
 	@Value("${kafka.server.list}")
 	private String kafkaServerList;

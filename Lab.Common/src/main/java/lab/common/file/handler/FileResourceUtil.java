@@ -38,7 +38,7 @@ public class FileResourceUtil {
 			byte[] buffer = content.getBytes();
 			ByteBuffer wrBuf = rwChannel.map(FileChannel.MapMode.READ_WRITE, 0, buffer.length);
 			wrBuf.put(buffer);
-
+			
 			return newTextFile;
 		} catch (IOException e) {
 			logger.error("{}", e);
@@ -49,15 +49,15 @@ public class FileResourceUtil {
 
 			if (randomAccessFile != null) {
 				try {
-					randomAccessFile.close();
-
+					
 					if (rwChannel != null) {
 						rwChannel.close();
 					}
 
+					randomAccessFile.close();
+
 				} catch (IOException e) {
 					logger.error(e.toString());
-
 				}
 			}
 

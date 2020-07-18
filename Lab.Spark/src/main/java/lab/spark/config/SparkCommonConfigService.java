@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class SparkCommonConfig {
+public class SparkCommonConfigService {
 
-	private Logger logger = LoggerFactory.getLogger(SparkCommonConfig.class);
+	private Logger logger = LoggerFactory.getLogger(SparkCommonConfigService.class);
 	
 	@Value("${spark.master.host.port}")
 	protected String spark_master_host_port;

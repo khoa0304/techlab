@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class CassandraConfig {
+public class CassandraConfigService {
 
 	@Value("${spring.data.cassandra.contact-points:placeholder}")
 	private String contactPoints;

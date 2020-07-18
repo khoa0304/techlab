@@ -20,16 +20,15 @@ public class SparkConfigService {
 	public final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:SS MM-dd-YY");
 
 	@Autowired
-	private SparkCommonConfig sparkCommonConfig;
+	private SparkCommonConfigService sparkCommonConfig;
 
 	@Autowired
-	private CassandraConfig cassandraConfig;
+	private CassandraConfigService cassandraConfig;
 
 	private String jarLocation = null;
 	
 	@PostConstruct
 	public void init() {
-		
 		File file = new File(".");
 		System.out.println("=====> Current Loc " + file.getAbsolutePath());
 		if(!SystemUtils.IS_OS_WINDOWS) {

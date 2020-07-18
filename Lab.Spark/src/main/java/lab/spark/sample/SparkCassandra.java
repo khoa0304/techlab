@@ -29,10 +29,10 @@ import com.johnsnowlabs.nlp.annotators.Normalizer;
 import com.johnsnowlabs.nlp.annotators.Tokenizer;
 import com.johnsnowlabs.nlp.annotators.sbd.pragmatic.SentenceDetector;
 
-import lab.spark.config.OpenNLPConfig;
-import lab.spark.dto.FileAndContent;
+import lab.spark.config.OpenNLPConfigService;
+import lab.spark.dto.FileUploadContent;
 import lab.spark.mllib.JavaTfIdf;
-import lab.spark.model.SparkOpenNlpService;
+import lab.spark.model.SparkOpenNlpProcessor;
 
 
 public class SparkCassandra {
@@ -109,38 +109,41 @@ public class SparkCassandra {
 
 	public Dataset<String[]> processContent(
 			SparkSession spark,
-			SparkOpenNlpService sparkOpenNLP,
-			OpenNLPConfig openNLPConfig,
+			SparkOpenNlpProcessor sparkOpenNLP,
+			OpenNLPConfigService openNLPConfig,
 			String keyspace, 
 			String tableName,String clusterName,String fileName) throws IOException {
 
 		Map<String,String> configMap = configMap(keyspace, tableName, clusterName);
 		
+		String fileNameCol = "fileName";
+		String fileContentCol = "fileContent";
+		
 		if(fileName !=null) {
 			
-			Dataset<FileAndContent> dataset = 
+			Dataset<FileUploadContent> dataset = 
 					spark.read().format("org.apache.spark.sql.cassandra")
 					.options(configMap).load()
-					.select("file_name","content")
-					.where("file_name = '"+fileName+"'")
-					.as(Encoders.bean(FileAndContent.class));
+					.select(fileNameCol,"fileContent")
+					.where(fileContentCol + " = '"+fileName+"'")
+					.as(Encoders.bean(FileUploadContent.class));
 			Dataset<String[]> sentencesDataset = 
 					sparkOpenNLP.processContentUsingOpenkNLP(
-							spark,openNLPConfig.getSentenceModel(), dataset);
+							spark,openNLPConfig.getSentenceModel(), dataset.select(fileContentCol));
 			return sentencesDataset;
 		}
 		else {
 			
 			
-			Dataset<FileAndContent> dataset = 
+			Dataset<FileUploadContent> dataset = 
 					spark.read().format("org.apache.spark.sql.cassandra")
 					.options(configMap).load()
 					.select("file_name","content")
-					.as(Encoders.bean(FileAndContent.class));
+					.as(Encoders.bean(FileUploadContent.class));
 			
 			Dataset<String[]> sentencesDataset = 
 					sparkOpenNLP.processContentUsingOpenkNLP(
-							spark,openNLPConfig.getSentenceModel(), dataset);
+							spark,openNLPConfig.getSentenceModel(), dataset.select(fileContentCol));
 			return sentencesDataset;
 			
 		}

@@ -17,14 +17,34 @@ public class DocumentPdf implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-
 	public static final String TABLE_NAME = "document_pdf";
-
+	
+	
+	public static final String FILENAME_COL = "fileName";
+	public static final String BINARYCONTENT_COL = "binnary_content";
+	public static final String FILECONTENT_COL = "fileContent";
+	public static final String SIZE_COL = "size";
+	
 	public static enum COLUMNS {
-		file_name, binary_content, content, size, uuid
+		
+		FILE_NAME(FILENAME_COL),
+		binary_content(BINARYCONTENT_COL), 
+		FILE_CONTENT(FILECONTENT_COL), 
+		size(SIZE_COL), 
+		uuid("uuid");
+		
+		private String columnName;
+		
+		private COLUMNS(String columnName) {
+			this.columnName = columnName;
+		}
+		
+		public String getColumnName() {
+			return this.columnName;
+		}
 	}
 
-	@Column(name = "file_name")
+	@Column(name=FILENAME_COL)
 	@PrimaryKey
 	@PartitionKey
 	@CassandraType(type=Name.VARCHAR)
@@ -36,10 +56,10 @@ public class DocumentPdf implements Serializable {
 //	@CassandraType(type=Name.BLOB)
 //	private ByteBuffer binaryContent;
 	
-	@Column(name = "content")
+	@Column(name = "fileContent")
 	@ClusteringColumn
 	@CassandraType(type=Name.TEXT)
-	private String content;
+	private String fileContent;
 
 	@ClusteringColumn(1)
 	@CassandraType(type=Name.BIGINT)
@@ -51,9 +71,9 @@ public class DocumentPdf implements Serializable {
 	
 	// all other column will be used as regular columns
 
-	public DocumentPdf(String fileName, String content, long size) {
+	public DocumentPdf(String fileName, String fileContent, long size) {
 		this.fileName = fileName;
-		this.content = content;
+		this.fileContent = fileContent;
 		this.size = size;
 		this.uuid = UUID.randomUUID();
 	}
@@ -61,10 +81,7 @@ public class DocumentPdf implements Serializable {
     
 	public String getFileName() {
 		return fileName;
-	}
-
-
-	
+	}	
 
 	public UUID getUuid() {
 		return uuid;
@@ -88,13 +105,13 @@ public class DocumentPdf implements Serializable {
 //		this.binaryContent = binaryContent;
 //	}
 
-	public String getContent() {
-		return content;
+	public String getFileContent() {
+		return fileContent;
 	}
 
 
-	public void setContent(String content) {
-		this.content = content;
+	public void setFileContent(String fileContent) {
+		this.fileContent = fileContent;
 	}
 
 
@@ -133,6 +150,6 @@ public class DocumentPdf implements Serializable {
 
 	@Override
 	public String toString() {
-		return "DocumentPdf [fileName=" + fileName + ", content=" + content + ", size=" + size + "]";
+		return "DocumentPdf [fileName=" + fileName + ", content=" + fileContent + ", size=" + size + "]";
 	}
 }

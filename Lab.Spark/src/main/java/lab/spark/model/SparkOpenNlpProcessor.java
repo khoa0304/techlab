@@ -1,23 +1,26 @@
 package lab.spark.model;
 
+import java.io.Serializable;
+
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-import lab.spark.dto.FileAndContent;
 import lab.spark.dto.FileUploadContent;
 import opennlp.tools.sentdetect.SentenceModel;
 
 
-public class SparkOpenNlpService {
+public class SparkOpenNlpProcessor implements Serializable {
 
-		
+	private static final long serialVersionUID = -8488774602800941495L;
+
 	public Dataset<String[]> processContentUsingOpenkNLP(
 			SparkSession sparkSession,
 			SentenceModel sentenceModel,
-			Dataset<FileAndContent> dataset){
+			Dataset<Row> dataset){
 
 		OpenNLPSerializedWrapper openNLPSerializedWrapper = new OpenNLPSerializedWrapper();
 
@@ -26,14 +29,13 @@ public class SparkOpenNlpService {
 
 		Dataset<String[]> sentencesDataset = dataset.map(
 				
-				(MapFunction<FileAndContent, String[]>) mapFunc ->
+				(MapFunction<Row, String[]>) mapFunc ->
 				
 				{
-					return broadcastSentenceDetector.value().detectSentence(sentenceModel,mapFunc.getContent());
+					return broadcastSentenceDetector.value().detectSentence(sentenceModel,mapFunc.getString(1));
 				}
 				, Encoders.kryo(String[].class)
 				);
-		
 		
 		return sentencesDataset;
 	}

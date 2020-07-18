@@ -38,7 +38,7 @@ public class DocumentPdfRepository {
 
 	public List<DocumentPdf> findAllByFileName(String fileName) {
 		final ResultSet result = session
-				.execute(select().all().from(TABLE).where(eq(DocumentPdf.COLUMNS.file_name.name(), fileName)));
+				.execute(select().all().from(TABLE).where(eq(DocumentPdf.COLUMNS.FILE_NAME.getColumnName(), fileName)));
 		return mapper.map(result).all();
 	}
 

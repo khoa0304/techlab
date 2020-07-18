@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.testng.annotations.Test;
 
-import lab.spark.config.CassandraConfig;
-import lab.spark.config.OpenNLPConfig;
-import lab.spark.model.SparkOpenNlpService;
+import lab.spark.config.CassandraConfigService;
+import lab.spark.config.OpenNLPConfigService;
+import lab.spark.model.SparkOpenNlpProcessor;
 
 @SpringBootTest
 public class SparkCassandraTest extends CommonTestSetup {
@@ -23,15 +23,15 @@ public class SparkCassandraTest extends CommonTestSetup {
 	public static final String COLUMN_CONTENT = "content";
 	
 	@Autowired
-	private CassandraConfig cassandraConfig;
+	private CassandraConfigService cassandraConfig;
 	
 	@Autowired
-	private OpenNLPConfig openNLPConfig;
+	private OpenNLPConfigService openNLPConfig;
 	
 	@Test
 	public void test1() throws IOException {
 		
-		SparkOpenNlpService sparkOpenNlpService = new SparkOpenNlpService();
+		SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();
 		
 		this.sparkSession = sparkConfigService.getSparkSessionForCassandra(getClass().getName());
 		

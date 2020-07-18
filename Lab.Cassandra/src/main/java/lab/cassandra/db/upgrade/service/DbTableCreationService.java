@@ -92,10 +92,10 @@ public class DbTableCreationService {
 		// @formatter off
 		session.execute(SchemaBuilder.createTable(DocumentPdf.TABLE_NAME)
 				.ifNotExists()
-				.addPartitionKey(DocumentPdf.COLUMNS.file_name.name(), varchar())
-				.addClusteringColumn(DocumentPdf.COLUMNS.size.name(), bigint())
-				.addColumn(DocumentPdf.COLUMNS.content.name(), text())
-				.addColumn(DocumentPdf.COLUMNS.uuid.name(), uuid())
+				.addPartitionKey(DocumentPdf.COLUMNS.FILE_NAME.getColumnName(), varchar())
+				.addClusteringColumn(DocumentPdf.COLUMNS.size.getColumnName(), bigint())
+				.addColumn(DocumentPdf.COLUMNS.FILE_CONTENT.getColumnName(), text())
+				.addColumn(DocumentPdf.COLUMNS.uuid.getColumnName(), uuid())
 				);
 		// .addColumn("age", cint()).addColumn("profession", text())
 		// .addColumn("salary", cint()));

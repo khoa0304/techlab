@@ -12,7 +12,7 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 
 @Service
-public class OpenNLPConfig {
+public class OpenNLPConfigService {
 
 	private SentenceModel sentenceModel;
 	private TokenizerModel tokenizerModel;

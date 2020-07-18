@@ -24,11 +24,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import lab.spark.config.KafkaConfig;
-import lab.spark.config.OpenNLPConfig;
+import lab.spark.config.KafkaConfigService;
+import lab.spark.config.OpenNLPConfigService;
 import lab.spark.config.SparkConfigService;
 import lab.spark.dto.FileUploadContent;
-import lab.spark.model.SparkOpenNlpService;
+import lab.spark.model.SparkOpenNlpProcessor;
 
 @Service
 public class FileUploadContentConsumerService {
@@ -39,10 +39,10 @@ public class FileUploadContentConsumerService {
 	private SparkConfigService sparkConfigService;
 
 	@Autowired
-	private KafkaConfig kafkaConfig;
+	private KafkaConfigService kafkaConfig;
 
 	@Autowired
-	private OpenNLPConfig openNLPConfig;
+	private OpenNLPConfigService openNLPConfig;
 
 	private StructType fileUploadContentSchema;
 
@@ -60,7 +60,7 @@ public class FileUploadContentConsumerService {
 
 	private void processFileUpload(SparkSession spark) throws StreamingQueryException {
 
-		SparkOpenNlpService sparkOpenNlpService = new SparkOpenNlpService();
+		SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();
 
 		Dataset<FileUploadContent> dataset = spark.readStream().format("kafka")
 				.option("kafka.bootstrap.servers", kafkaConfig.getKafkaServerList())
@@ -98,7 +98,8 @@ public class FileUploadContentConsumerService {
 		});
 				
 		String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
-		KafkaConsumerTask kafkaConsumerTask = new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName), topicName);
+		
+		KafkaConsumerTask kafkaConsumerTask = new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName), topicName,openNLPConfig);
 		
 		scheduledExecutorService.schedule(kafkaConsumerTask,30,TimeUnit.SECONDS);
 		
