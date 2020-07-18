@@ -3,7 +3,7 @@
 git pull
 
 cd Lab.Spark
-mvn clean package
+mvn clean package spring-boot:repackage
 
 cd ..
 cd Lab.Kafka
