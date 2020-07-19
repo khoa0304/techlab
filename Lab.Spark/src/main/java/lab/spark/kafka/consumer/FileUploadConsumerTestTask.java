@@ -67,8 +67,14 @@ public class FileUploadConsumerTestTask implements Serializable {
 	private void processFileUpload(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
 			throws InterruptedException {
 
+		final StructType schema = DataTypes.createStructType(
+				new StructField[] { 
+						DataTypes.createStructField("FileName", DataTypes.StringType, true),
+						DataTypes.createStructField("FileContent", DataTypes.StringType, true)});
+
 		JavaStreamingContext jssc = new JavaStreamingContext(sparkConfig, Durations.seconds(15));
 
+		jssc.checkpoint("./");
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
 				LocationStrategies.PreferConsistent(),
@@ -99,11 +105,7 @@ public class FileUploadConsumerTestTask implements Serializable {
 			@Override
 			public void call(JavaRDD<FileUploadContent> rdd) throws Exception {
 
-				StructType schema = DataTypes.createStructType(
-						new StructField[] { 
-								DataTypes.createStructField("FileName", DataTypes.StringType, true),
-								DataTypes.createStructField("FileContent", DataTypes.StringType, true)});
-
+				
 				JavaRDD<Row> rowRDD = rdd.map(new Function<FileUploadContent, Row>() {
 				
 					private static final long serialVersionUID = 1L;
@@ -132,11 +134,11 @@ public class FileUploadConsumerTestTask implements Serializable {
 					List<String[]> list = sentencesDataset.collectAsList();
 					
 					for(String[] sentences : list) {
-						System.out.println("\n\n=============================================");
+						logger.info("\n\n=============================================");
 						
-						System.out.println("Number of sentences: "+ sentences.length);
-						Arrays.stream(sentences).forEach(num -> System.out.println(num));
-						System.out.println("=============================================");
+						logger.info("Number of sentences: "+ sentences.length);
+						Arrays.stream(sentences).forEach(num -> logger.info(num));
+						logger.info("=============================================");
 					}
 				}
 			}
