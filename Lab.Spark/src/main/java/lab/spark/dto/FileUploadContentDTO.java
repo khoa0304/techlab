@@ -2,14 +2,14 @@ package lab.spark.dto;
 
 import java.io.Serializable;
 
-public class FileUploadContent implements Serializable {
+public class FileUploadContentDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
 	private String fileName;
 	private String fileContent;
 	
-	public FileUploadContent() {};
+	public FileUploadContentDTO() {};
 	
 //	public FileUploadContent(String fileName, String fileContent) {
 //		this.fileName = fileName;

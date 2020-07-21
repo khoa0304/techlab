@@ -9,7 +9,8 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-import lab.spark.dto.FileUploadContent;
+import lab.spark.dto.FileNameAndSentencesDTO;
+import lab.spark.dto.FileUploadContentDTO;
 import opennlp.tools.sentdetect.SentenceModel;
 
 
@@ -17,7 +18,33 @@ public class SparkOpenNlpProcessor implements Serializable {
 
 	private static final long serialVersionUID = -8488774602800941495L;
 
-	public Dataset<String[]> processContentUsingOpenkNLP(
+	public Dataset<FileNameAndSentencesDTO> processContentUsingOpenkNLP(
+			SparkSession sparkSession,
+			SentenceModel sentenceModel,
+			Dataset<Row> dataset){
+
+		OpenNLPSerializedWrapper openNLPSerializedWrapper = new OpenNLPSerializedWrapper();
+
+		Broadcast<OpenNLPSerializedWrapper> broadcastSentenceDetector = sparkSession.sparkContext()
+				.broadcast(openNLPSerializedWrapper, scala.reflect.ClassTag$.MODULE$.apply(OpenNLPSerializedWrapper.class));
+
+		Dataset<FileNameAndSentencesDTO> sentencesDataset = dataset.map(
+				
+				(MapFunction<Row, FileNameAndSentencesDTO>) mapFunc ->
+				
+				{
+					String[] sentences = broadcastSentenceDetector.value().detectSentence(sentenceModel,mapFunc.getString(1));
+					FileNameAndSentencesDTO fileNameAndSentencesDto = new FileNameAndSentencesDTO(mapFunc.getString(0), sentences);
+					return fileNameAndSentencesDto;
+				}
+				, Encoders.kryo(FileNameAndSentencesDTO.class)
+				);
+		
+		return sentencesDataset;
+	}
+	
+	
+	public Dataset<String[]> extractWordFromString(
 			SparkSession sparkSession,
 			SentenceModel sentenceModel,
 			Dataset<Row> dataset){
@@ -40,10 +67,12 @@ public class SparkOpenNlpProcessor implements Serializable {
 		return sentencesDataset;
 	}
 	
+	
+	
 	public Dataset<String[]> extractStringContentSentence(
 			SparkSession sparkSession,
 			SentenceModel sentenceModel,
-			Dataset<FileUploadContent> dataset){
+			Dataset<FileUploadContentDTO> dataset){
 
 		OpenNLPSerializedWrapper openNLPSerializedWrapper = new OpenNLPSerializedWrapper();
 
@@ -52,7 +81,7 @@ public class SparkOpenNlpProcessor implements Serializable {
 
 		Dataset<String[]> sentencesDataset = dataset.map(
 				
-				(MapFunction<FileUploadContent, String[]>) mapFunc ->
+				(MapFunction<FileUploadContentDTO, String[]>) mapFunc ->
 				
 				{
 					return broadcastSentenceDetector.value().detectSentence(sentenceModel,mapFunc.getFileContent());

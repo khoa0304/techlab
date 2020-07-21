@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 import lab.spark.config.KafkaConfigService;
 import lab.spark.config.OpenNLPConfigService;
 import lab.spark.config.SparkConfigService;
-import lab.spark.dto.FileUploadContent;
+import lab.spark.dto.FileUploadContentDTO;
 import lab.spark.model.SparkOpenNlpProcessor;
 
 @Service
@@ -62,7 +62,7 @@ public class FileUploadContentConsumerService {
 
 		SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();
 
-		Dataset<FileUploadContent> dataset = spark.readStream().format("kafka")
+		Dataset<FileUploadContentDTO> dataset = spark.readStream().format("kafka")
 				.option("kafka.bootstrap.servers", kafkaConfig.getKafkaServerList())
 				.option("subscribe", kafkaConfig.getKafkaTextFileUploadTopic())
 				// .option("kafka.max.partition.fetch.bytes",
@@ -70,7 +70,7 @@ public class FileUploadContentConsumerService {
 				// .option("kafka.max.poll.records", prop.getProperty("kafka.max.poll.records"))
 				.load().selectExpr("CAST(value AS STRING) as message")
 				.select(functions.from_json(functions.col("message"), fileUploadContentSchema).as("json"))
-				.select("json.*").as(Encoders.bean(FileUploadContent.class));
+				.select("json.*").as(Encoders.bean(FileUploadContentDTO.class));
 
 		Dataset<String[]> sentencesDataset = sparkOpenNlpService.extractStringContentSentence(spark,
 				openNLPConfig.getSentenceModel(), dataset);

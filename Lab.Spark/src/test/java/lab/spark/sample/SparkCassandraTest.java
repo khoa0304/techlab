@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 
 import lab.spark.config.CassandraConfigService;
 import lab.spark.config.OpenNLPConfigService;
+import lab.spark.dto.FileNameAndSentencesDTO;
 import lab.spark.model.SparkOpenNlpProcessor;
 
 @SpringBootTest
@@ -46,7 +47,7 @@ public class SparkCassandraTest extends CommonTestSetup {
 //		Dataset<String[]> dataset3 = 
 //				sparkCassandra.processContent(sparkSession, KEYSPACE, TABLE, cassandraConfig.getClusterName(),"UTResume.pdf.txt");
 		
-		Dataset<String[]> dataset3 = 
+		Dataset<FileNameAndSentencesDTO> dataset3 = 
 				sparkCassandra.processContent(
 						sparkSession,sparkOpenNlpService, openNLPConfig,
 						KEYSPACE, TABLE, cassandraConfig.getClusterName(),null);
@@ -54,11 +55,11 @@ public class SparkCassandraTest extends CommonTestSetup {
 		
 		dataset3.persist(StorageLevel.MEMORY_ONLY());
 		
-		List<String[]> list = dataset3.collectAsList();
+		List<FileNameAndSentencesDTO> list = dataset3.collectAsList();
 		
-		for(String[] sentences : list) {
+		for(FileNameAndSentencesDTO sentences : list) {
 			System.out.println("\n\n=============================================");
-			Arrays.stream(sentences).forEach(num -> System.out.println(num));
+			Arrays.stream(sentences.getSentences()).forEach(num -> System.out.println(num));
 			System.out.println("=============================================");
 		}
 
