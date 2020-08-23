@@ -100,7 +100,11 @@ public class SparkConfigService {
 				.appName(className + ": " + simpleDateFormat.format(new Date()))
 				.config("spark.jars", jarLocation)
 				.config("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
-				.config("spark.executor.memory", "4g");
+				// config("spark.driver.cores", "2")
+				//.config("spark.shuffle.service.enabled", "false")
+				//.config("spark.dynamicAllocation.enabled", "false")
+				.config("spark.driver.memory", "4g");
+		
 		
 		return sparkSessionBuilder;
 		

@@ -60,18 +60,17 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 	}
 
-	private Map<String,String[]> sentencesPerFileName = new ConcurrentHashMap<>();
-	
+	private Map<String, String[]> sentencesPerFileName = new ConcurrentHashMap<>();
+
 	private void processFileUpload(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
 			throws InterruptedException {
 
 		final StructType schema = DataTypes.createStructType(
-				new StructField[] { 
-						DataTypes.createStructField("FileName", DataTypes.StringType, true),
+				new StructField[] { DataTypes.createStructField("FileName", DataTypes.StringType, true),
 						DataTypes.createStructField("FileContent", DataTypes.StringType, true) });
 
 		JavaStreamingContext jssc = new JavaStreamingContext(sparkConfig, Durations.seconds(15));
-		jssc.checkpoint("./");
+		jssc.checkpoint("./checkpoint/");
 
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
@@ -97,7 +96,6 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 		final SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
 
-		
 		lines.foreachRDD(new VoidFunction<JavaRDD<FileUploadContentDTO>>() {
 
 			private static final long serialVersionUID = 1L;
@@ -116,23 +114,25 @@ public class FileUploadConsumerTestTask implements Serializable {
 					}
 				});
 
-				
 				Dataset<Row> msgDataFrame = sparkSession.createDataFrame(rowRDD, schema);
 
-				Dataset<FileNameAndSentencesDTO> sentencesDataset = sparkOpenNLP.processContentUsingOpenkNLP(sparkSession,
-						sentenceModel, msgDataFrame);
+				Dataset<FileNameAndSentencesDTO> sentencesDataset = sparkOpenNLP
+						.processContentUsingOpenkNLP(sparkSession, sentenceModel, msgDataFrame);
+				
+	//			long count = sentencesDataset.count();
 
+//				logger.info("Count ", count);
 				List<FileNameAndSentencesDTO> list = sentencesDataset.collectAsList();
 
 				if (list.size() > 0) {
 
 					for (FileNameAndSentencesDTO fileNameAndSentencesDTO : list) {
-						
+
 						logger.info("\n\n=============================================");
 
 						logger.info("Number of sentences: " + fileNameAndSentencesDTO.getSentences().length);
-						Arrays.asList(fileNameAndSentencesDTO.getSentences()).forEach(s ->System.out.println(s));
-						//sentencesPerFileName.put(row, value)
+						Arrays.asList(fileNameAndSentencesDTO.getSentences()).forEach(s -> System.out.println(s));
+						// sentencesPerFileName.put(row, value)
 						logger.info("=============================================");
 					}
 				}

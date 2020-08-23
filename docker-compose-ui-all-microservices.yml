@@ -55,7 +55,26 @@ services:
     volumes:
       - /tmp:/home/khoa
     expose:
-      - "11515"      
+      - "11515" 
+
+  ui:
+    build: ./Lab.Solr
+    container_name: solr-service
+    hostname: 10.15.1.8
+    environment:
+      - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
+      - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
+      - "server.port=11518"
+    networks:
+      aaa_lab_network_10_x:
+        ipv4_address: 10.15.1.8
+    ports:
+      - 11518:11518
+      - 4448:4444
+    volumes:
+      - /tmp:/home/khoa
+    expose:
+      - "11518"           
       
 networks:
   aaa_lab_network_10_x:

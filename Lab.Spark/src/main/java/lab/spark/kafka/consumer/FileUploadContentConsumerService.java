@@ -101,7 +101,7 @@ public class FileUploadContentConsumerService {
 		
 		KafkaConsumerTask kafkaConsumerTask = new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName), topicName,openNLPConfig);
 		
-		scheduledExecutorService.schedule(kafkaConsumerTask,30,TimeUnit.SECONDS);
+		scheduledExecutorService.schedule(kafkaConsumerTask,5,TimeUnit.SECONDS);
 		
 		logger.info("Finished scheduling Spark-Kafka Consumer for streaming from topic {} ",topicName);
 

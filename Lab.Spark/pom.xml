@@ -102,9 +102,9 @@
 		</dependency>
 
 		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
 
 		<!-- SPARK -->
 		<!-- Notes: 1. _2.11 such as spark-core_2.11 is for Spark compiled using 
@@ -228,6 +228,13 @@
 			<version>1.9.2</version>
 		</dependency>
 
+
+
+		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.inject/jersey-hk2 -->
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+		</dependency>
 
 		<!-- TestNG -->
 

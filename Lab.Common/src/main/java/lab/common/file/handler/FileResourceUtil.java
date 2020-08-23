@@ -68,6 +68,8 @@ public class FileResourceUtil {
 	public String readFileContentAsText(DocumentDto documentDto) throws IOException {
 
 		FileInputStream stream = null;
+		Reader reader = null;
+		
 		try {
 
 			final File file = new File(documentDto.getAbsoluteDirectoryPath(),
@@ -75,12 +77,12 @@ public class FileResourceUtil {
 			stream = new FileInputStream(file);
 			
 		    StringBuilder sb = new StringBuilder();
-		    Reader r = new InputStreamReader(stream, "UTF-8");  //or whatever encoding
+		    reader = new InputStreamReader(stream, "UTF-8");  //or whatever encoding
 		    char[] buf = new char[4096];
-		    int amt = r.read(buf);
+		    int amt = reader.read(buf);
 		    while(amt > 0) {
 		        sb.append(buf, 0, amt);
-		        amt = r.read(buf);
+		        amt = reader.read(buf);
 		    }
 		    
 		    final String stringContent = sb.toString();
@@ -93,6 +95,10 @@ public class FileResourceUtil {
 
 		finally {
 
+			if(reader != null) {
+				reader.close();
+			}
+			
 			if (stream != null) {
 				try {
 					stream.close();

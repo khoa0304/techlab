@@ -82,6 +82,17 @@ public class FileStorageService {
 		} catch (IOException ex) {
 			throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
 		}
+		finally{
+			
+			if(file != null) {
+				try {
+					file.getInputStream().close();
+				} catch (IOException e) {
+					logger.error("", e);
+				}
+			}
+		}
+		
 	}
 
 	public Resource loadFileAsResource(String fileName) {

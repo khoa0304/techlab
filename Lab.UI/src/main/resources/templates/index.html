@@ -2,18 +2,64 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8" />
-<title>Spring Boot Thymeleaf Application - Bootstrap Dropzone</title>
+<title>Lab</title>
+
+<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+	<script th:src="@{/js/jquery/jquery-3.5.0.js}"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 
 <link th:rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.min.css} " />
 <link th:rel="stylesheet" th:href="@{/css/dropzone/dropzone.css}" />
 <link th:rel="stylesheet" th:href="@{/css/toastr/toastr.min.css}" />
+	
+	
+	<script>
+	  
+	
+	$(function() {
+		$("#searchBox").autocomplete({
+			source : function(request, response) {
+				$.ajax({
+					url: "http://12.8.0.2:11515/search/getTags?querytext=" + request.term + "",
+					dataType : "json",
+					minLength : 2,
+					data : {
+						q : request.term
+					},
+					success : function(data) {
+						
+						 response($.map(data, function(item) {
+		                     return {
+		                         label : item.tagName,
+		                         value : item.tagName
+		                     };
+		               }));
+					},
+				    
+					error: function (data) {
+	                    console.log('search error');
+	                }
+				});
+			},
+		
+		   select: function (event, ui) {
+			   $("#result").html(ui.item.value).show();
+	        }
+			
+	      
+	    })
+	
+	});
+	</script>
 </head>
 <body>
 
 	<!-- Navigation -->
 	<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
 		<div class="container">
-			<a class="navbar-brand" href="/">Thymeleaf - Bootstrap Dropzone</a>
+			<a class="navbar-brand" href="/">Lab- Dropzone</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse"
 				data-target="#navbarResponsive" aria-controls="navbarResponsive"
 				aria-expanded="false" aria-label="Toggle navigation">
@@ -43,9 +89,10 @@
 				</div>
 
 				<div id="dropzone">
-					<form action="/uploadFile" class="dropzone needsclick" id="uploadFile">
+					<form action="/uploadFile" class="dropzone needsclick"
+						id="uploadFile" style="width: 548px; ">
 
-						<div class="dz-message needsclick">
+						<div class="dz-message needsclick" style="width: 587px; height: 33px">
 							<button type="button" class="dz-button">Drop files here
 								or click to upload.</button>
 							<br />
@@ -57,21 +104,30 @@
 			</div>
 		</div>
 
+		<div class="ui-widget" id="menu-container" style="width: 845px; ">
+			<label for="search">Search: </label> 
+			<input type="text" id="searchBox" style="height: 23px; width: 549px">
+			
+		</div>
+
+		<div class="ui-widget" >
+			<label for="selection">Selection: </label> 
+			 <output id="result" for="selection"></output>
+		</div>
 	</div>
 
 
-	<script th:src="@{/js/jquery/jquery-3.5.0.js}"></script>
+	
 	<script th:src="@{/js/popper/popper.min.js}"></script>
 	<script th:src="@{/js/bootstrap/bootstrap.min.js}"></script>
 	<script th:src="@{/js/dropzone/dropzone.js}"></script>
 	<script th:src="@{/js/toastr/toastr.min.js}"></script>
-
-	<script type="text/javascript">
 	
+	<script type="text/javascript">
 		Dropzone.autoDiscover = false;
-		
+
 		$("#uploadFile").dropzone({
-			
+
 			maxFilesize : 4096,//MB
 			timeout : 7200000,//milisecond - 2 hours
 			acceptedFiles : ".jpeg,.jpg,.png,.gif,.pdf,.txt,.csv",
@@ -82,6 +138,8 @@
 
 		});
 	</script>
+
+
 
 </body>
 </html>
