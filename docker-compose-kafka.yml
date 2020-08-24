@@ -1,0 +1,27 @@
+version: '3'
+services:
+      
+  kafka:
+    build: ./Lab.Kafka
+    container_name: kafka-service
+    hostname: 10.15.1.6
+    environment:
+      - "EUREKA_SERVER=http://khoa:welcome123@10.15.1.1:18761/eureka"
+      - "EUREKA_CONFIG_SERVER=http://10.15.1.2:11512"
+      - "server.port=11516"
+    networks:
+      aaa_lab_network_10_x:
+        ipv4_address: 10.15.1.6
+    ports:
+      - 11516:11516
+      - 4446:4444
+    volumes:
+      - /tmp:/home/khoa
+    expose:
+      - "11516"
+      
+
+      
+networks:
+  aaa_lab_network_10_x:
+    external: true

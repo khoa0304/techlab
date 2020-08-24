@@ -1,7 +1,12 @@
 package lab.spark.config;
 
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -25,7 +30,30 @@ public class SparkCommonConfigService {
 	
 	@PostConstruct
 	public void init() throws UnknownHostException {
-		spark_Driver_Host = InetAddress.getLocalHost().getHostAddress();
+		
+		Enumeration<NetworkInterface> networkInterfaces;
+		try {
+			networkInterfaces = NetworkInterface.getNetworkInterfaces();
+			while(networkInterfaces.hasMoreElements()) {
+				NetworkInterface networkInterface = networkInterfaces.nextElement();
+				List<InterfaceAddress> interfaceAddressList = networkInterface.getInterfaceAddresses();
+				for(InterfaceAddress interfaceAddress : interfaceAddressList) {
+					InetAddress inetAddress = interfaceAddress.getAddress();
+					if(! inetAddress.isLoopbackAddress()) {
+						String hostAddress = inetAddress.getHostAddress();
+						//TODO to be configured externally
+						if(hostAddress.indexOf("12.8") !=-1 || hostAddress.indexOf("10.15") !=-1) {
+							spark_Driver_Host = hostAddress;
+						}
+					}
+				}
+			}
+		} catch (SocketException e) {
+		    logger.warn("Error obtaining network interfact to figure out spark driver IP addresss ",e);
+			spark_Driver_Host = InetAddress.getLocalHost().getHostAddress();
+		}
+		
+		//spark_Driver_Host = .;
 		logger.info("Spark Master {} - Spark Driver IP Address {}", this.spark_master_host_port, this.spark_Driver_Host);
 	}
 
