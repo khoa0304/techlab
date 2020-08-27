@@ -30,7 +30,7 @@ import com.johnsnowlabs.nlp.annotators.Tokenizer;
 import com.johnsnowlabs.nlp.annotators.sbd.pragmatic.SentenceDetector;
 
 import lab.spark.config.OpenNLPConfigService;
-import lab.spark.dto.FileNameAndSentencesDTO;
+import lab.spark.dto.SentencesDTO;
 import lab.spark.dto.FileUploadContentDTO;
 import lab.spark.mllib.JavaTfIdf;
 import lab.spark.model.SparkOpenNlpProcessor;
@@ -108,7 +108,7 @@ public class SparkCassandra {
 	}
 	
 
-	public Dataset<FileNameAndSentencesDTO> processContent(
+	public Dataset<SentencesDTO> processContent(
 			SparkSession spark,
 			SparkOpenNlpProcessor sparkOpenNLP,
 			OpenNLPConfigService openNLPConfig,
@@ -128,7 +128,7 @@ public class SparkCassandra {
 					.select(fileNameCol,"fileContent")
 					.where(fileContentCol + " = '"+fileName+"'")
 					.as(Encoders.bean(FileUploadContentDTO.class));
-			Dataset<FileNameAndSentencesDTO> sentencesDataset = 
+			Dataset<SentencesDTO> sentencesDataset = 
 					sparkOpenNLP.processContentUsingOpenkNLP(
 							spark,openNLPConfig.getSentenceModel(), dataset.select(fileContentCol));
 			return sentencesDataset;
@@ -142,7 +142,7 @@ public class SparkCassandra {
 					.select("file_name","content")
 					.as(Encoders.bean(FileUploadContentDTO.class));
 			
-			Dataset<FileNameAndSentencesDTO> sentencesDataset = 
+			Dataset<SentencesDTO> sentencesDataset = 
 					sparkOpenNLP.processContentUsingOpenkNLP(
 							spark,openNLPConfig.getSentenceModel(), dataset.select(fileContentCol));
 			return sentencesDataset;

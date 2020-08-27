@@ -2,6 +2,7 @@ package lab.spark.nlp.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
@@ -13,20 +14,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-public class NlpUtil {
+import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 
-	String name;
-	private static final Logger LOGGER = LoggerFactory.getLogger(NlpUtil.class);
+public class NlpUtil implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+
+	private static final Logger logger = LoggerFactory.getLogger(NlpUtil.class);
+	
+	private static final NlpUtil INSTANCE = new NlpUtil();
+	
+	private static final Set<String> STOP_WORD_SET =  new HashSet<>();
+	
+	private static final String FILE_LOCATION_PREFIX = "/opt/spark-data/stopwords/english/stopwords_%d.txt";
+	
+	private static final String LEMMA_DICTIONARY= "/opt/spark-data/opennlp/models/en-lemmatizer.dict";
+	
+	private DictionaryLemmatizer dictionaryLemmatizer;
+	
+	private NlpUtil() {};
+	
+	public static final NlpUtil getInstance() {
+		return INSTANCE;
+	}
 	
 	public Set<String> getStopWordsSet(){
 
-		String fileLocationPrefix = "classpath:stopwords/english/stopWords_%d.txt";
+		if(!STOP_WORD_SET.isEmpty()) return STOP_WORD_SET;
 		
-		Set<String> stopWordsSet =  new HashSet<>();
 		
 		for(int i = 1 ; i <= 3; i ++) {
 			
-			String fileLocation = String.format(fileLocationPrefix, i);
+			String fileLocation = String.format(FILE_LOCATION_PREFIX, i);
 			try {
 				
 				File file = ResourceUtils.getFile(fileLocation);
@@ -37,21 +56,36 @@ public class NlpUtil {
 					public String apply(String t) {
 
 						if(t != null && t.trim().length() > 0) {
-							
 							return t.toLowerCase();
 						}
 						return "";
 					}
 				}).collect(Collectors.toSet());;
 
-				stopWordsSet.addAll(set);
+				STOP_WORD_SET.addAll(set);
 			}catch (IOException e) {
-				LOGGER.error("Error reading stop words ",e);
+				logger.error("Error reading stop words ",e);
 			}
 		
 		}
 		
 		
-		return stopWordsSet;
+		return STOP_WORD_SET;
+	}
+	
+	public DictionaryLemmatizer getDictionaryLemmatizer() {
+		
+		try {
+			
+			if(dictionaryLemmatizer != null)return dictionaryLemmatizer;
+			
+			dictionaryLemmatizer = 
+					new DictionaryLemmatizer(new File(LEMMA_DICTIONARY));
+			logger.info("Finish loading English Dictionary size {}", dictionaryLemmatizer.getDictMap().size());
+			
+		} catch (IOException e) {
+			logger.error("Error loading dictionaryLemmatizer",e);
+		}
+		return dictionaryLemmatizer;
 	}
 }

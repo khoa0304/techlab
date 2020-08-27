@@ -13,13 +13,11 @@ import java.util.Set;
 
 import org.testng.annotations.Test;
 
-import lab.spark.nlp.util.NlpUtil;
-
 public class NlpUtilTest {
 
 	@Test
 	public void testLoadEnglishStopWords() throws IOException {
-		NlpUtil nlpUtil = new NlpUtil();
+		NlpUtil nlpUtil = NlpUtil.getInstance();
 		Set<String> stopWords = nlpUtil.getStopWordsSet();
 		assertTrue(stopWords.size() > 0);
 	}

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.SparkConf;
@@ -30,10 +29,14 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lab.spark.dto.FileNameAndSentencesDTO;
+import lab.spark.config.OpenNLPConfigService;
 import lab.spark.dto.FileUploadContentDTO;
+import lab.spark.dto.SentencesDTO;
+import lab.spark.dto.WordsPerSentenceDTO;
 import lab.spark.model.SparkOpenNlpProcessor;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.tokenize.TokenizerModel;
 
 public class FileUploadConsumerTestTask implements Serializable {
 
@@ -45,24 +48,33 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 	private SparkOpenNlpProcessor sparkOpenNLP;
 	private SentenceModel sentenceModel;
-
-	public FileUploadConsumerTestTask(SparkConf sparkConfig, Map<String, Object> configMap, String topicName,
-			SparkOpenNlpProcessor sparkOpenNLP, SentenceModel openNLPConfig) throws InterruptedException {
+	private TokenizerModel tokenizerModel;
+	private POSModel posModel;
+	
+	public FileUploadConsumerTestTask(
+			SparkConf sparkConfig, 
+			Map<String, Object> configMap, 
+			String topicName,
+			SparkOpenNlpProcessor sparkOpenNLP, 
+			OpenNLPConfigService openNLPConfig) throws InterruptedException {
 
 		this.sparkOpenNLP = sparkOpenNLP;
-		this.sentenceModel = openNLPConfig;
-
+		this.sentenceModel = openNLPConfig.getSentenceModel();
+		this.tokenizerModel = openNLPConfig.getTokenizerModel();
+		this.posModel = openNLPConfig.getPOSModel();
+	
+		
 		try {
 			processFileUpload(sparkConfig, configMap, topicName);
 		} catch (Exception e) {
 			logger.error("", e);
 		}
-
 	}
 
-	private Map<String, String[]> sentencesPerFileName = new ConcurrentHashMap<>();
 
-	private void processFileUpload(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
+	private void processFileUpload(
+			SparkConf sparkConfig, 
+			Map<String, Object> configMap, String topicName)
 			throws InterruptedException {
 
 		final StructType schema = DataTypes.createStructType(
@@ -94,10 +106,12 @@ public class FileUploadConsumerTestTask implements Serializable {
 					}
 				});
 
-		final SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
+		
 
 		lines.foreachRDD(new VoidFunction<JavaRDD<FileUploadContentDTO>>() {
-
+			
+			final SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
+			
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -116,25 +130,38 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 				Dataset<Row> msgDataFrame = sparkSession.createDataFrame(rowRDD, schema);
 
-				Dataset<FileNameAndSentencesDTO> sentencesDataset = sparkOpenNLP
+				Dataset<SentencesDTO> sentencesDataset = sparkOpenNLP
 						.processContentUsingOpenkNLP(sparkSession, sentenceModel, msgDataFrame);
 				
-	//			long count = sentencesDataset.count();
+				Dataset<WordsPerSentenceDTO[]> wordsPerSentenceDataset = 
+						sparkOpenNLP.extractWordsFromSentence(sparkSession, tokenizerModel, sentencesDataset);
+				
+				Dataset<WordsPerSentenceDTO[]> stemPerSentenceDataset = 
+						sparkOpenNLP.stemWords(sparkSession, posModel, wordsPerSentenceDataset);
+				
 
-//				logger.info("Count ", count);
-				List<FileNameAndSentencesDTO> list = sentencesDataset.collectAsList();
+				List<WordsPerSentenceDTO[]> list = stemPerSentenceDataset.collectAsList();
 
 				if (list.size() > 0) {
-
-					for (FileNameAndSentencesDTO fileNameAndSentencesDTO : list) {
-
-						logger.info("\n\n=============================================");
-
-						logger.info("Number of sentences: " + fileNameAndSentencesDTO.getSentences().length);
-						Arrays.asList(fileNameAndSentencesDTO.getSentences()).forEach(s -> System.out.println(s));
-						// sentencesPerFileName.put(row, value)
-						logger.info("=============================================");
+				
+					WordsPerSentenceDTO[] fileNameAndWordsDTO = list.get(0);
+					logger.info("\n\n=============================================");
+					
+					logger.info("FileName {} - Number of sentences {} ",fileNameAndWordsDTO[0].getFileName(), list.size());
+					
+					for (WordsPerSentenceDTO[] fileNameAndSentencesDTOArray : list) {
+					
+						for(WordsPerSentenceDTO fileNameAndSentencesDTO:fileNameAndSentencesDTOArray) {
+							
+							logger.info("Sentence: {} ",fileNameAndSentencesDTO.getSentence());
+							for(String stem : fileNameAndSentencesDTO.getWords()) {
+								logger.info(stem);
+							}
+						}
 					}
+					
+					// sentencesPerFileName.put(row, value)
+					logger.info("=============================================");
 				}
 			}
 		});

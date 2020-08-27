@@ -103,7 +103,9 @@ public class SparkConfigService {
 				// config("spark.driver.cores", "2")
 				//.config("spark.shuffle.service.enabled", "false")
 				//.config("spark.dynamicAllocation.enabled", "false")
+				.config("SPARK_LOCAL_IP",sparkCommonConfig.getSpark_Driver_Host())
 				.config("spark.driver.memory", "4g");
+		
 		
 		
 		return sparkSessionBuilder;

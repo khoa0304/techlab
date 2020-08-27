@@ -4,3 +4,4 @@
 /.checkpoint*
 /checkpoint-*
 /receivedBlockMetadata/
+/checkpoint/

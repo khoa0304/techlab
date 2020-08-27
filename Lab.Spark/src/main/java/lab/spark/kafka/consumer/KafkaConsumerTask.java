@@ -37,7 +37,10 @@ public class KafkaConsumerTask implements Runnable {
 			final SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();		
 			new FileUploadConsumerTestTask(
 					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()),
-					this.configMap, this.topicName,sparkOpenNlpService,openNLPConfig.getSentenceModel());
+					this.configMap, 
+					this.topicName,
+					sparkOpenNlpService,
+					openNLPConfig);
 			
 		} catch (UnknownHostException | InterruptedException e) {
 			logger.warn("", e);
