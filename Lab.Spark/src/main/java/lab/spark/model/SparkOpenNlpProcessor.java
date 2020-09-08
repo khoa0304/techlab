@@ -2,27 +2,28 @@ package lab.spark.model;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import lab.spark.dto.FileUploadContentDTO;
 import lab.spark.dto.SentencesDTO;
 import lab.spark.dto.WordsPerSentenceDTO;
+import lab.spark.nlp.util.NlpUtil;
+import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 
 public class SparkOpenNlpProcessor implements Serializable {
 
-	private static final long serialVersionUID = -8488774602800941495L;
 	
-	private Logger logger = LoggerFactory.getLogger(SparkOpenNlpProcessor.class);
+	private static final long serialVersionUID = 1L;
 	
 	private static OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
 	
@@ -30,8 +31,6 @@ public class SparkOpenNlpProcessor implements Serializable {
 			SparkSession sparkSession,
 			SentenceModel sentenceModel,
 			Dataset<FileUploadContentDTO> dataset){
-
-		
 
 //		Broadcast<OpenNLPSerializedWrapper> broadcastSentenceDetector = sparkSession.sparkContext()
 //				.broadcast(openNLPSerializedWrapper, scala.reflect.ClassTag$.MODULE$.apply(OpenNLPSerializedWrapper.class));
@@ -41,7 +40,7 @@ public class SparkOpenNlpProcessor implements Serializable {
 				(MapFunction<FileUploadContentDTO, String[]>) mapFunc ->
 				
 				{
-					//OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
+				    OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
 					
 					return openNLPSerializedWrapper.detectSentence(sentenceModel,mapFunc.getFileContent());
 				}
@@ -55,15 +54,22 @@ public class SparkOpenNlpProcessor implements Serializable {
 	public Dataset<WordsPerSentenceDTO[]> extractWordsFromSentence(
 			SparkSession sparkSession,
 			TokenizerModel tokenizerModel,
+			Set<String> englisStopWords,
 			Dataset<SentencesDTO> dataset){
+		
+//		Broadcast<OpenNLPSerializedWrapper> broadcastSentenceDetector = sparkSession.sparkContext()
+//				.broadcast(openNLPSerializedWrapper, scala.reflect.ClassTag$.MODULE$.apply(OpenNLPSerializedWrapper.class));
+	
 
 		Dataset<WordsPerSentenceDTO[]> sentencesDataset = dataset.map(
 				
 				(MapFunction<SentencesDTO,WordsPerSentenceDTO[]>) mapFunc ->
 				
 				{
-					//OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
-					Map<String,String[]> wordsGroupedBySentence = openNLPSerializedWrapper.tokenizeSentence(tokenizerModel,mapFunc.getSentences());
+					
+					OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
+					Map<String,String[]> wordsGroupedBySentence =
+							openNLPSerializedWrapper.tokenizeSentence(tokenizerModel,englisStopWords,mapFunc.getSentences());
 					
 					WordsPerSentenceDTO[] fileNameAndWordsDTOs = new WordsPerSentenceDTO[wordsGroupedBySentence.size()];
 					int index = 0;
@@ -88,6 +94,9 @@ public class SparkOpenNlpProcessor implements Serializable {
 			SparkSession sparkSession,
 			POSModel posModel,
 			Dataset<WordsPerSentenceDTO[]> wordsDataset){
+		
+		Broadcast<OpenNLPSerializedWrapper> broadcastSentenceDetector = sparkSession.sparkContext()
+				.broadcast(openNLPSerializedWrapper, scala.reflect.ClassTag$.MODULE$.apply(OpenNLPSerializedWrapper.class));
 
 		Dataset<WordsPerSentenceDTO[]> sentencesDataset = wordsDataset.map(
 				
@@ -96,10 +105,12 @@ public class SparkOpenNlpProcessor implements Serializable {
 				{
 					//OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
 					
+					DictionaryLemmatizer dictionaryLemmatizer = NlpUtil.getInstance().getDictionaryLemmatizer();
+					
 					for(WordsPerSentenceDTO wordsPerSentenceDTO : wordsDatasetArray) {
 					
 						String[] words = wordsPerSentenceDTO.getWords();
-						String[] stems = openNLPSerializedWrapper.lemmatatizer(posModel,words );						
+						String[] stems = broadcastSentenceDetector.getValue().lemmatatizer(dictionaryLemmatizer,posModel,words );						
 						wordsPerSentenceDTO.setWords(stems);
 					}
 					return wordsDatasetArray;
@@ -118,8 +129,8 @@ public class SparkOpenNlpProcessor implements Serializable {
 
 //		OpenNLPSerializedWrapper openNLPSerializedWrapper = new OpenNLPSerializedWrapper();
 //
-//		Broadcast<OpenNLPSerializedWrapper> broadcastSentenceDetector = sparkSession.sparkContext()
-//				.broadcast(openNLPSerializedWrapper, scala.reflect.ClassTag$.MODULE$.apply(OpenNLPSerializedWrapper.class));
+		Broadcast<OpenNLPSerializedWrapper> broadcastSentenceDetector = sparkSession.sparkContext()
+				.broadcast(openNLPSerializedWrapper, scala.reflect.ClassTag$.MODULE$.apply(OpenNLPSerializedWrapper.class));
 
 		Dataset<SentencesDTO> sentencesDataset = dataset.map(
 				
@@ -127,7 +138,7 @@ public class SparkOpenNlpProcessor implements Serializable {
 				
 				{
 					//OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
-					String[] sentences = openNLPSerializedWrapper.detectSentence(sentenceModel,mapFunc.getString(1));
+					String[] sentences = broadcastSentenceDetector.getValue().detectSentence(sentenceModel,mapFunc.getString(1));
 					SentencesDTO fileNameAndSentencesDto = new SentencesDTO(mapFunc.getString(0), sentences);
 					return fileNameAndSentencesDto;
 				}

@@ -1,11 +1,14 @@
 package lab.spark.dto;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
-public class SentencesDTO implements Serializable {
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoSerializable;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
+public class SentencesDTO implements KryoSerializable {
 	
-	private static final long serialVersionUID = 1L;
 	private String fileName;
 	private String[] sentences;
 	
@@ -32,6 +35,19 @@ public class SentencesDTO implements Serializable {
 	@Override
 	public String toString() {
 		return "FileNameAndSentencesDto [fileName=" + fileName + ", sentences=" + Arrays.toString(sentences) + "]";
+	}
+
+	@Override
+	public void write(Kryo kryo, Output output) {
+		output.writeString(fileName);
+		kryo.writeClassAndObject(output,sentences);
+		
+	}
+
+	@Override
+	public void read(Kryo kryo, Input input) {
+		fileName = input.readString();
+		sentences = (String[]) kryo.readClassAndObject(input);
 	}
 	
 	

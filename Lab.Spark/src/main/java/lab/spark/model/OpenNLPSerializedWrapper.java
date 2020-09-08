@@ -3,7 +3,6 @@ package lab.spark.model;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import lab.spark.nlp.util.NlpUtil;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
@@ -27,9 +25,6 @@ public class OpenNLPSerializedWrapper implements Serializable {
 	private Logger logger = LoggerFactory.getLogger(OpenNLPSerializedWrapper.class);
 	
 	private static final long serialVersionUID = 1L;
-	private static Set<String> ENGLISH_STOP_WORDS = new HashSet<>();
-	
-	private DictionaryLemmatizer dictionaryLemmatizer;
 	
 	private static OpenNLPSerializedWrapper INSTANCE = new OpenNLPSerializedWrapper();
 	
@@ -37,22 +32,14 @@ public class OpenNLPSerializedWrapper implements Serializable {
 		return INSTANCE;
 	}
 	
-	private OpenNLPSerializedWrapper() {
-		
-		NlpUtil nlpUtil = NlpUtil.getInstance();
-		ENGLISH_STOP_WORDS  = nlpUtil.getStopWordsSet();
-		logger.info("Total Number of Stop Words {}",ENGLISH_STOP_WORDS.size());
-		
-		dictionaryLemmatizer = nlpUtil.getDictionaryLemmatizer();
-		
-	}
+	private OpenNLPSerializedWrapper() {}
 	
 	public String[] detectSentence(SentenceModel sentenceModel,String content) {
 		SentenceDetectorME sentenceDetectorME = new SentenceDetectorME(sentenceModel);
 		return sentenceDetectorME.sentDetect(content);
 	}
 	
-	public Map<String,String[]> tokenizeSentence(TokenizerModel tokenizerModel,String[] sentences) {
+	public Map<String,String[]> tokenizeSentence(TokenizerModel tokenizerModel,Set<String> ENGLISH_STOP_WORDS, String[] sentences) {
 		
 		TokenizerME tokenizer = new TokenizerME (tokenizerModel);  
 		
@@ -63,9 +50,9 @@ public class OpenNLPSerializedWrapper implements Serializable {
 			if(StringUtils.isEmpty(sentence)) continue;
 			
 			String[] tokens = tokenizer.tokenize(sentence);
-			List<String> words = removeStopWords(tokens);
+			List<String> words = removeStopWords(tokens,ENGLISH_STOP_WORDS);
 			String[] wordArray = words.toArray(new String[0]);
-			logger.info("Total words {}", wordArray.length);
+			logger.debug("Total words {}", wordArray.length);
 			wordsGroupedBySentence.put(sentence,wordArray );
 		}
 	
@@ -73,22 +60,20 @@ public class OpenNLPSerializedWrapper implements Serializable {
 	}
 	
 	
-	public String[] lemmatatizer(POSModel posModel, String[] words) {
+	public String[] lemmatatizer(DictionaryLemmatizer dictionaryLemmatizer,POSModel posModel, String[] words) {
 	    POSTaggerME posTagger = new POSTaggerME(posModel);
         String[] tags = posTagger.tag(words);
         String[] lemmas = dictionaryLemmatizer.lemmatize(words, tags);
-		logger.info("====== > Stemming {} words - Stems size: {}" , words.length,lemmas.length);
         return lemmas;
     }
 	
 	
-	private List<String> removeStopWords(String[] words ) {
+	private List<String> removeStopWords(String[] words,Set<String> ENGLISH_STOP_WORDS  ) {
 		logger.debug("Before removing stopword {} ",words.length);
 		
 		List<String> wordList =
 				Arrays.asList(words).stream().parallel().map(w ->w.toLowerCase()).collect(Collectors.toList());
 		wordList.removeAll(ENGLISH_STOP_WORDS);
-		
 		logger.debug("After removing stopword {} ",wordList.size());
 		
 		return wordList;

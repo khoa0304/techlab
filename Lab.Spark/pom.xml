@@ -236,6 +236,8 @@
 			<artifactId>jersey-hk2</artifactId>
 		</dependency>
 
+	
+
 		<!-- TestNG -->
 
 		<dependency>

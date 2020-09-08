@@ -1,22 +1,17 @@
 package lab.spark.kafka.consumer;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
@@ -29,72 +24,46 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lab.spark.config.OpenNLPConfigService;
 import lab.spark.dto.FileUploadContentDTO;
 import lab.spark.dto.SentencesDTO;
 import lab.spark.dto.WordsPerSentenceDTO;
-import lab.spark.model.SparkOpenNlpProcessor;
+import lab.spark.nlp.util.NlpUtil;
+import lab.spark.task.SentenceDetectTask;
+import lab.spark.task.TokenizeSentenceTask;
+import lab.spark.task.WordStemTask;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 
 public class FileUploadConsumerTestTask implements Serializable {
 
-	private Logger logger = LoggerFactory.getLogger(FileUploadConsumerTask.class);
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-
-	private SparkOpenNlpProcessor sparkOpenNLP;
-	private SentenceModel sentenceModel;
-	private TokenizerModel tokenizerModel;
-	private POSModel posModel;
 	
-	public FileUploadConsumerTestTask(
-			SparkConf sparkConfig, 
-			Map<String, Object> configMap, 
-			String topicName,
-			SparkOpenNlpProcessor sparkOpenNLP, 
-			OpenNLPConfigService openNLPConfig) throws InterruptedException {
-
-		this.sparkOpenNLP = sparkOpenNLP;
-		this.sentenceModel = openNLPConfig.getSentenceModel();
-		this.tokenizerModel = openNLPConfig.getTokenizerModel();
-		this.posModel = openNLPConfig.getPOSModel();
+	private Logger logger = LoggerFactory.getLogger(FileUploadConsumerTestTask.class);
 	
-		
-		try {
-			processFileUpload(sparkConfig, configMap, topicName);
-		} catch (Exception e) {
-			logger.error("", e);
-		}
-	}
-
-
-	private void processFileUpload(
+	
+	public void processFileUpload(
 			SparkConf sparkConfig, 
-			Map<String, Object> configMap, String topicName)
+			Map<String, Object> configMap,
+			String topicName)
 			throws InterruptedException {
 
-		final StructType schema = DataTypes.createStructType(
-				new StructField[] { DataTypes.createStructField("FileName", DataTypes.StringType, true),
-						DataTypes.createStructField("FileContent", DataTypes.StringType, true) });
+//		final StructType schema = DataTypes.createStructType(
+//				new StructField[] { 
+//						DataTypes.createStructField("FileName", DataTypes.StringType, true),
+//						DataTypes.createStructField("FileContent", DataTypes.StringType, true) });
 
 		JavaStreamingContext jssc = new JavaStreamingContext(sparkConfig, Durations.seconds(15));
-		jssc.checkpoint("./checkpoint/");
+		//jssc.checkpoint("./checkpoint/");
 
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
 				LocationStrategies.PreferConsistent(),
 				ConsumerStrategies.<String, String>Subscribe(Arrays.asList(topicName), configMap));
-
+		
 		// Read value of each message from Kafka and return it
-		JavaDStream<FileUploadContentDTO> lines = stream
+		JavaDStream<FileUploadContentDTO> fileUploadContentDTODStream = stream
 				.map(new Function<ConsumerRecord<String, String>, FileUploadContentDTO>() {
-					/**
-					 * 
-					 */
 					private static final long serialVersionUID = 1L;
 
 					@Override
@@ -105,58 +74,132 @@ public class FileUploadConsumerTestTask implements Serializable {
 						return fileUploadContent;
 					}
 				});
-
 		
+		JavaDStream<SentencesDTO> sentencesDStream = fileUploadContentDTODStream.map(new Function<FileUploadContentDTO, SentencesDTO>() {
 
-		lines.foreachRDD(new VoidFunction<JavaRDD<FileUploadContentDTO>>() {
+			private static final long serialVersionUID = 1L;
+            private SentenceModel sentenceModel= null;
 			
-			final SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
+			@Override
+			public SentencesDTO call(FileUploadContentDTO fileUploadContentDTO) throws Exception {
 			
+				if(sentenceModel == null) {
+					sentenceModel = new SentenceModel(new File("/opt/spark-data/opennlp/models/en-sent.bin"));	
+					logger.info("Initialize Sentence Model");
+				}
+				
+				SentenceDetectTask sentenceDetectTask = new SentenceDetectTask();
+				SentencesDTO sentencesDTO =
+						sentenceDetectTask.extractSentencesFromContent(sentenceModel, fileUploadContentDTO);
+			
+				return sentencesDTO;
+			}
+		
+		});
+				
+		
+		
+		JavaDStream<WordsPerSentenceDTO[]> wordsDStream = sentencesDStream.map(new Function<SentencesDTO,WordsPerSentenceDTO[]>() {
+		
+			private static final long serialVersionUID = 1L;
+			private TokenizerModel tokenizerModel = null;
+			
+			@Override
+			public WordsPerSentenceDTO[] call(SentencesDTO sentencesDTO) throws Exception {
+				
+				if(tokenizerModel == null) {
+					tokenizerModel = new TokenizerModel(new File("/opt/spark-data/opennlp/models/en-token.bin"));
+					logger.info("Initialize TokenizerModel");
+				}
+				
+				TokenizeSentenceTask tokenizeSentenceTask = new TokenizeSentenceTask();
+				
+				Map<String,String[]> wordsGroupBySentence =
+						tokenizeSentenceTask.tokenizeSentence(tokenizerModel, sentencesDTO);
+				
+				WordsPerSentenceDTO[] wordsPerSentenceDTOs = new WordsPerSentenceDTO[wordsGroupBySentence.size()];
+				
+				int index = 0;
+				for(Map.Entry<String,String[]> entry : wordsGroupBySentence.entrySet()) {
+				
+					WordsPerSentenceDTO wordsPerSentenceDTO = 
+							new WordsPerSentenceDTO(sentencesDTO.getFileName(), entry.getKey(),entry.getValue());
+					
+					wordsPerSentenceDTOs[index++] = wordsPerSentenceDTO;
+				}
+			
+				return wordsPerSentenceDTOs;
+			}
+	
+		});
+		
+		final Set<String> PUNCTUATION_SET = NlpUtil.getPunctuationSet();
+		
+		JavaDStream<WordsPerSentenceDTO[]> stemsDStream = wordsDStream.map(new Function<WordsPerSentenceDTO[], WordsPerSentenceDTO[]>() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+			private POSModel posModel = null;
+			
+			@Override
+			public WordsPerSentenceDTO[] call(WordsPerSentenceDTO[] wordsGroupBySentenceList) throws Exception {
+				
+				if(posModel == null) {
+					posModel = new POSModel(new File("/opt/spark-data/opennlp/models/en-pos-maxent.bin"));
+					logger.info("Initialize PostModel");
+				}
+				 
+				for(WordsPerSentenceDTO entry : wordsGroupBySentenceList) {
+					
+					WordStemTask wordStemTask = new WordStemTask();
+					String[] words= entry.getWords();
+					String[] stems = wordStemTask.lemmatatizer(posModel,words);
+					int index = 0;
+					for(String stem : stems) {
+					
+						if(stem.equalsIgnoreCase("O")) {
+							String originalWord = words[index];
+							logger.debug("Replace Stem 0 with {} ", PUNCTUATION_SET.contains(originalWord) ? "":originalWord);
+							stems[index] = words[index];
+						}
+						index++;
+					}
+					logger.info("Total Words {} - Total Stems {} ", words.length,stems.length);
+					entry.setWords(Arrays.copyOf(stems, stems.length));
+				}
+				
+				return wordsGroupBySentenceList;
+			}
+		});
+		
+		
+		stemsDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO[]>>() {
+		
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void call(JavaRDD<FileUploadContentDTO> rdd) throws Exception {
-
-				JavaRDD<Row> rowRDD = rdd.map(new Function<FileUploadContentDTO, Row>() {
-
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public Row call(FileUploadContentDTO v1) throws Exception {
-						Row row = RowFactory.create(v1.getFileName(), v1.getFileContent());
-						return row;
-					}
-				});
-
-				Dataset<Row> msgDataFrame = sparkSession.createDataFrame(rowRDD, schema);
-
-				Dataset<SentencesDTO> sentencesDataset = sparkOpenNLP
-						.processContentUsingOpenkNLP(sparkSession, sentenceModel, msgDataFrame);
+			public void call(JavaRDD<WordsPerSentenceDTO[]> javaRDD) throws Exception {
 				
-				Dataset<WordsPerSentenceDTO[]> wordsPerSentenceDataset = 
-						sparkOpenNLP.extractWordsFromSentence(sparkSession, tokenizerModel, sentencesDataset);
-				
-				Dataset<WordsPerSentenceDTO[]> stemPerSentenceDataset = 
-						sparkOpenNLP.stemWords(sparkSession, posModel, wordsPerSentenceDataset);
-				
-
-				List<WordsPerSentenceDTO[]> list = stemPerSentenceDataset.collectAsList();
-
+				List<WordsPerSentenceDTO[]> list = javaRDD.collect();
 				if (list.size() > 0) {
 				
 					WordsPerSentenceDTO[] fileNameAndWordsDTO = list.get(0);
 					logger.info("\n\n=============================================");
 					
-					logger.info("FileName {} - Number of sentences {} ",fileNameAndWordsDTO[0].getFileName(), list.size());
+					logger.info("FileName {} - Number of RDD {} ",fileNameAndWordsDTO[0].getFileName(), list.size());
 					
 					for (WordsPerSentenceDTO[] fileNameAndSentencesDTOArray : list) {
 					
 						for(WordsPerSentenceDTO fileNameAndSentencesDTO:fileNameAndSentencesDTOArray) {
-							
-							logger.info("Sentence: {} ",fileNameAndSentencesDTO.getSentence());
+							StringBuilder sb = new StringBuilder();
 							for(String stem : fileNameAndSentencesDTO.getWords()) {
-								logger.info(stem);
+								sb.append(stem).append(" ");
 							}
+							logger.info("Sentence: {} ",fileNameAndSentencesDTO.getSentence());
+							logger.info("Stem/Word {})", sb.toString());
+						    sb = null;
 						}
 					}
 					
@@ -175,3 +218,6 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 	}
 }
+
+
+

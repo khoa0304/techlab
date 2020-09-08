@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import lab.spark.config.OpenNLPConfigService;
 import lab.spark.config.SparkConfigService;
-import lab.spark.model.SparkOpenNlpProcessor;
 
 public class KafkaConsumerTask implements Runnable {
 
@@ -18,7 +17,6 @@ public class KafkaConsumerTask implements Runnable {
 	private  Map<String, Object> configMap;
 	private String topicName;
 	
-	private OpenNLPConfigService openNLPConfig;
 	
 	public KafkaConsumerTask(
 			SparkConfigService sparkConfigService,
@@ -29,20 +27,20 @@ public class KafkaConsumerTask implements Runnable {
 		this.sparkConfigService = sparkConfigService;
 		this.configMap = configMap;
 		this.topicName = topicName;
-		this.openNLPConfig = openNLPConfig;
+
 	}
 	@Override
 	public void run() {
 		try {
-			final SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();		
-			new FileUploadConsumerTestTask(
-					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()),
-					this.configMap, 
-					this.topicName,
-					sparkOpenNlpService,
-					openNLPConfig);
+			//final SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();		
+			FileUploadConsumerTestTask fileUploadConsumerTestTask = 
+					new FileUploadConsumerTestTask();
 			
-		} catch (UnknownHostException | InterruptedException e) {
+			fileUploadConsumerTestTask.processFileUpload(
+					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()), 
+					configMap, topicName);
+			
+		} catch (UnknownHostException | InterruptedException | ClassNotFoundException e) {
 			logger.warn("", e);
 		}
 	}

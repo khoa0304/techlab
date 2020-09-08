@@ -1,0 +1,156 @@
+//		lines.foreachRDD(rdd->{
+			
+//			SparkSession sparkSession = SparkSession.builder().config(rdd.context().getConf()).getOrCreate();
+//			
+//			Dataset<Row> msgDataFrame = sparkSession.createDataFrame(rdd, FileUploadContentDTO.class);
+//			
+//			List<Row> row = msgDataFrame.collectAsList();
+//			
+//			logger.info("Rows = ",row.size());
+			
+//			logger.info("Count {} ",rdd.count());
+//		});
+//		final OpenNLPSerializedWrapper openNLPSerializedWrapper = OpenNLPSerializedWrapper.getInstance();
+//		
+//		
+//		lines.foreachRDD(rdd ->{
+//			
+//			rdd.foreachPartition(partitionOfRecords -> {
+//				
+//				
+//				while(partitionOfRecords.hasNext()) {
+//					
+//					FileUploadContentDTO fileUploadContentDTO = partitionOfRecords.next();
+//					
+//					String fileContent = fileUploadContentDTO.getFileContent();
+//					String[] sentences = openNLPSerializedWrapper.detectSentence(sentenceModel, fileContent);
+//					
+//					Set<String> englishStopWords = NlpUtil.getInstance().getStopWordsSet();
+//					Map<String,String[]> wordsGroupedBySentence = openNLPSerializedWrapper.tokenizeSentence(tokenizerModel, englishStopWords, sentences);
+//				   
+//					WordsPerSentenceDTO[] fileNameAndWordsDTOs = new WordsPerSentenceDTO[wordsGroupedBySentence.size()];
+//					int index = 0;
+//					for(Map.Entry<String,String[]> entry : wordsGroupedBySentence.entrySet()) {
+//						
+//						WordsPerSentenceDTO fileNameAndSentencesDto = 
+//								new WordsPerSentenceDTO(fileUploadContentDTO.getFileName(), entry.getKey(),entry.getValue());
+//						fileNameAndWordsDTOs[index++]= fileNameAndSentencesDto;
+//						
+//					}
+//					
+//
+//					DictionaryLemmatizer dictionaryLemmatizer = NlpUtil.getInstance().getDictionaryLemmatizer();
+//					
+//					for(WordsPerSentenceDTO wordsPerSentenceDTO : fileNameAndWordsDTOs) {
+//					
+//						String[] words = wordsPerSentenceDTO.getWords();
+//						String[] stems = openNLPSerializedWrapper.lemmatatizer(dictionaryLemmatizer,posModel,words );						
+//						wordsPerSentenceDTO.setWords(stems);
+//					}
+//					
+//					
+//					logger.info("\n\n=============================================");
+//					
+//					logger.info("FileName {} - Number of sentences {} ",fileNameAndWordsDTOs[0].getFileName(), fileNameAndWordsDTOs.length);
+//					
+//					for (WordsPerSentenceDTO fileNameAndSentencesDTO : fileNameAndWordsDTOs) {
+//						
+//						logger.info("Sentence: {} ",fileNameAndSentencesDTO.getSentence());
+//						for(String stem : fileNameAndSentencesDTO.getWords()) {
+//							logger.info(stem);
+//						}
+//					}
+//					
+//					// sentencesPerFileName.put(row, value)
+//					logger.info("=============================================");
+//				}
+//			});
+//		});
+		
+		
+
+//		lines.foreachRDD(new VoidFunction<JavaRDD<FileUploadContentDTO>>() {
+//		
+//			
+//			private static final long serialVersionUID = 1L;
+//
+//			@Override
+//			public void call(JavaRDD<FileUploadContentDTO> rdd) throws Exception {
+//
+//				JavaRDD<Row> rowRDD = rdd.map(new Function<FileUploadContentDTO, Row>() {
+//
+//					private static final long serialVersionUID = 1L;
+//
+//					@Override
+//					public Row call(FileUploadContentDTO v1) throws Exception {
+//						Row row = RowFactory.create(v1.getFileName(), v1.getFileContent());
+//						return row;
+//					}
+//				});
+//
+//				SparkSession sparkSession = SparkSession.builder().config(rdd.context().getConf()).getOrCreate();
+//				
+//				Dataset<Row> msgDataFrame = sparkSession.createDataFrame(rowRDD, schema);
+//
+//				Dataset<SentencesDTO> sentencesDataset = sparkOpenNLP
+//						.processContentUsingOpenkNLP(sparkSession, sentenceModel, msgDataFrame);
+//				
+////				Dataset<WordsPerSentenceDTO[]> wordsPerSentenceDataset = 
+////						sparkOpenNLP.extractWordsFromSentence(sparkSession, tokenizerModel, sentencesDataset);
+//				
+////				Dataset<WordsPerSentenceDTO[]> stemPerSentenceDataset = 
+////						sparkOpenNLP.stemWords(sparkSession, posModel, wordsPerSentenceDataset);
+//				
+//
+////				List<WordsPerSentenceDTO[]> list = stemPerSentenceDataset.collectAsList();
+//				
+//				//List<WordsPerSentenceDTO[]> list = wordsPerSentenceDataset.collectAsList();
+//
+////				if (list.size() > 0) {
+////				
+////					WordsPerSentenceDTO[] fileNameAndWordsDTO = list.get(0);
+////					logger.info("\n\n=============================================");
+////					
+////					logger.info("FileName {} - Number of sentences {} ",fileNameAndWordsDTO[0].getFileName(), list.size());
+////					
+////					for (WordsPerSentenceDTO[] fileNameAndSentencesDTOArray : list) {
+////					
+////						for(WordsPerSentenceDTO fileNameAndSentencesDTO:fileNameAndSentencesDTOArray) {
+////							
+////							logger.info("Sentence: {} ",fileNameAndSentencesDTO.getSentence());
+////							for(String stem : fileNameAndSentencesDTO.getWords()) {
+////								logger.info(stem);
+////							}
+////						}
+////					}
+////					
+////					// sentencesPerFileName.put(row, value)
+////					logger.info("=============================================");
+////				}
+//				
+//				
+//				List<SentencesDTO> list = sentencesDataset.collectAsList();
+//
+//				if (list.size() > 0) {
+//				
+//					SentencesDTO fileNameAndWordsDTO = list.get(0);
+//					logger.info("\n\n=============================================");
+//					
+//					logger.info("FileName {} - Number of sentences {} ",fileNameAndWordsDTO.getFileName(), list.size());
+//					
+//					for (SentencesDTO fileNameAndSentencesDTOArray : list) {
+//					
+//					
+//							
+//							logger.info("Sentence: {} ", fileNameAndSentencesDTOArray.getSentences().length);
+//							for(String stem : fileNameAndSentencesDTOArray.getSentences()) {
+//								logger.info(stem);
+//							}
+//					
+//					}
+//					
+//					// sentencesPerFileName.put(row, value)
+//					logger.info("=============================================");
+//				}
+//			}
+//		});

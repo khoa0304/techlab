@@ -2,8 +2,8 @@ package lab.spark.nlp.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,9 +16,8 @@ import org.springframework.util.ResourceUtils;
 
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 
-public class NlpUtil implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
+public class NlpUtil {
+
 
 	private static final Logger logger = LoggerFactory.getLogger(NlpUtil.class);
 	
@@ -63,6 +62,7 @@ public class NlpUtil implements Serializable {
 				}).collect(Collectors.toSet());;
 
 				STOP_WORD_SET.addAll(set);
+				logger.info("Finished initializing STOP_WORDS {}", STOP_WORD_SET.size());
 			}catch (IOException e) {
 				logger.error("Error reading stop words ",e);
 			}
@@ -87,5 +87,19 @@ public class NlpUtil implements Serializable {
 			logger.error("Error loading dictionaryLemmatizer",e);
 		}
 		return dictionaryLemmatizer;
+	}
+	
+	public static Set<String> getPunctuationSet(){
+		Set<String> set =  new HashSet<String>();
+		
+		final String[] array = new String[] {
+		   "!",".",",","#",".",
+		   "(",")","~","*",":",
+		   "[","]","{","}"
+		};
+		
+		set.addAll(Arrays.asList(array));
+		
+		return set;
 	}
 }

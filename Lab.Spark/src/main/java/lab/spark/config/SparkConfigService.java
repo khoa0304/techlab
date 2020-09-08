@@ -1,13 +1,11 @@
 package lab.spark.config;
 
-import java.io.File;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -29,15 +27,35 @@ public class SparkConfigService {
 	
 	@PostConstruct
 	public void init() {
-		File file = new File(".");
-		System.out.println("=====> Current Loc " + file.getAbsolutePath());
-		if(!SystemUtils.IS_OS_WINDOWS) {
-			jarLocation="target/lab-service-spark-0.0.1-SNAPSHOT.jar";
-		}
-		else {
-			jarLocation="target/lab-service-spark-0.0.1-SNAPSHOT.jar";
-		}
+		//File file = new File(".");
+		//System.out.println("=====> Current Loc " + file.getAbsolutePath());
+		jarLocation="target/lab-service-spark-0.0.1-SNAPSHOT.jar";
 	}
+	
+
+
+	public SparkConf getSparkConfig(String className) throws UnknownHostException, ClassNotFoundException {
+
+		SparkConf sparkConf = new SparkConf();
+		sparkConf.setAppName(className + ": " + simpleDateFormat.format(new Date()));
+		sparkConf
+				.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
+				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
+				.set("spark.local.ip",sparkCommonConfig.getSpark_Driver_Host())
+				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+				.set("spark.kryo.registrationRequired", "false")
+				.registerKryoClasses(
+					      new Class[] {
+					    		  Class.forName("lab.spark.dto.FileUploadContentDTO"),
+					    		  Class.forName("lab.spark.dto.SentencesDTO"),
+					    		  Class.forName("lab.spark.dto.WordsPerSentenceDTO")
+					      }
+					    )
+				.setJars(new String[] { jarLocation });
+		return sparkConf;
+	}
+
+	//~~~~~~~~~~~~~ Below Not being used for actual code yet ~~~~~~~~~~~~ //
 	
 	public JavaSparkContext getJavaSparkContext(String className) throws UnknownHostException {
 		SparkSession sparkSession = getSparkSession(className);
@@ -46,18 +64,8 @@ public class SparkConfigService {
 		// JavaSparkContext(getSparkConf(getClass().getName()));//.sparkContext());
 		return javaSparkContext;
 	}
-
-	public SparkConf getSparkConfig(String className) throws UnknownHostException {
-
-		SparkConf sparkConf = new SparkConf();
-		sparkConf.setAppName(className + ": " + simpleDateFormat.format(new Date()));
-		sparkConf
-				.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
-				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
-				.setJars(new String[] { jarLocation });
-		return sparkConf;
-	}
-
+	
+	
 	public SparkSession getSparkSession(String className) {
 
 		SparkSession sparkSession = getBasicSparkSessionBuilder(className).getOrCreate();

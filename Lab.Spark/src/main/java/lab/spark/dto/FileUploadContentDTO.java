@@ -1,21 +1,17 @@
 package lab.spark.dto;
 
-import java.io.Serializable;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoSerializable;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
-public class FileUploadContentDTO implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class FileUploadContentDTO implements KryoSerializable {
 	
 	private String fileName;
 	private String fileContent;
+	private String[] sentences = new String[0];
 	
 	public FileUploadContentDTO() {};
-	
-//	public FileUploadContent(String fileName, String fileContent) {
-//		this.fileName = fileName;
-//		this.fileContent = fileContent;
-//	};
-	
 	
 	public String getFileName() {
 		return fileName;
@@ -29,8 +25,33 @@ public class FileUploadContentDTO implements Serializable {
 	public void setFileContent(String fileContent) {
 		this.fileContent = fileContent;
 	}
+	public String[] getSentences() {
+		return sentences;
+	}
+
+	public void setSentences(String[] sentences) {
+		this.sentences = sentences;
+	}
+
 	@Override
 	public String toString() {
 		return "FileUploadContent [fileName=" + fileName + ", fileContent=" + fileContent + "]";
+	}
+
+	@Override
+	public void write(Kryo kryo, Output output) {
+		output.writeString(fileName);
+		output.writeString(fileContent);
+		
+		kryo.writeClassAndObject(output, sentences);	
+		
+	}
+
+	@Override
+	public void read(Kryo kryo, Input input) {
+		fileName = input.readString();
+	    fileContent = input.readString();
+	    sentences = (String[]) kryo.readClassAndObject(input);
+		
 	}
 }
