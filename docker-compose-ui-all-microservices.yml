@@ -57,7 +57,7 @@ services:
     expose:
       - "11515" 
 
-  ui:
+  solr:
     build: ./Lab.Solr
     container_name: solr-service
     hostname: 10.15.1.8
