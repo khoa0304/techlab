@@ -8,7 +8,7 @@ import java.util.List;
  * @author kntran
  *
  */
-public class SentenceAndWordStem {
+public class SentenceAndStem {
 
 	private String fileName;
 	private String sentence;

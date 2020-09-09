@@ -28,6 +28,7 @@
 		<module>Lab.Cassandra</module>
 		<module>Lab.DataCapture</module>
 		<module>Lab.UI</module>
+		<module>Lab.Solr</module>
 		
 	</modules>
 

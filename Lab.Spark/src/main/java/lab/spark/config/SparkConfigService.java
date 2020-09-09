@@ -12,6 +12,10 @@ import org.apache.spark.sql.SparkSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import lab.spark.dto.FileUploadContentDTO;
+import lab.spark.dto.SentencesDTO;
+import lab.spark.dto.WordsPerSentenceDTO;
+
 @Service
 public class SparkConfigService {
 
@@ -43,13 +47,16 @@ public class SparkConfigService {
 				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.local.ip",sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-				.set("spark.kryo.registrationRequired", "false")
+				.set("spark.kryo.registrationRequired", "true")
 				.registerKryoClasses(
-					      new Class[] {
-					    		  Class.forName("lab.spark.dto.FileUploadContentDTO"),
-					    		  Class.forName("lab.spark.dto.SentencesDTO"),
-					    		  Class.forName("lab.spark.dto.WordsPerSentenceDTO")
-					      }
+					      new Class<?>[] {
+					    		   FileUploadContentDTO.class,
+					    		   SentencesDTO.class,
+					    		   SentencesDTO[].class,
+					    		   WordsPerSentenceDTO.class,
+					    		   WordsPerSentenceDTO[].class
+					    		   }
+					      
 					    )
 				.setJars(new String[] { jarLocation });
 		return sparkConf;

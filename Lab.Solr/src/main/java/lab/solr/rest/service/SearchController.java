@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import lab.solr.rest.pojo.SentenceAndWordStem;
+import lab.solr.rest.pojo.SentenceAndStem;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/solr")
 public class SearchController {
 
 	private Logger logger = LoggerFactory.getLogger(SearchController.class);
@@ -47,13 +47,13 @@ public class SearchController {
 	@GetMapping("/ping")
 	@ResponseBody
 	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
-		return " Data Capture Service responds " + name;
+		return " Solr Search Service responds. Solr Endpoint " + solrServerEndpoint +" Default Collection " + defaultCollection;
 	}	
 	
     
     @PostMapping(path = "/sentence/index",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public ResponseEntity<HttpStatus> indexSentence(@RequestBody SentenceAndWordStem sentenceAndWordStem) {
+	public ResponseEntity<HttpStatus> indexSentence(@RequestBody SentenceAndStem sentenceAndWordStem) {
 
 		try {
 			int numberOfWords = sentenceAndWordStem.getWordStem().size();
