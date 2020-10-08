@@ -25,13 +25,16 @@ public class DocumentPdf implements Serializable {
 	public static final String FILECONTENT_COL = "fileContent";
 	public static final String SIZE_COL = "size";
 	
+	
+	public DocumentPdf() {}
+	
 	public static enum COLUMNS {
 		
 		FILE_NAME(FILENAME_COL),
-		binary_content(BINARYCONTENT_COL), 
+		BINARY_CONTENT(BINARYCONTENT_COL), 
 		FILE_CONTENT(FILECONTENT_COL), 
-		size(SIZE_COL), 
-		uuid("uuid");
+		SIZE(SIZE_COL), 
+		UUID("uuid");
 		
 		private String columnName;
 		

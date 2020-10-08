@@ -56,7 +56,7 @@ public class SearchController {
 	public ResponseEntity<HttpStatus> indexSentence(@RequestBody SentenceAndStem sentenceAndWordStem) {
 
 		try {
-			int numberOfWords = sentenceAndWordStem.getWordStem().size();
+			int numberOfWords = sentenceAndWordStem.getWords().length;
 			if(numberOfWords == 0) {
 				return new ResponseEntity<HttpStatus>(HttpStatus.LENGTH_REQUIRED); 
 			}
@@ -64,7 +64,7 @@ public class SearchController {
 			
 			final List<SolrInputDocument> list = new ArrayList<SolrInputDocument>();
 			
-			for(String word : sentenceAndWordStem.getWordStem()) {
+			for(String word : sentenceAndWordStem.getWords()) {
 		
 				SolrInputDocument solrInputDocument = new SolrInputDocument();
 				solrInputDocument.addField("word", word);

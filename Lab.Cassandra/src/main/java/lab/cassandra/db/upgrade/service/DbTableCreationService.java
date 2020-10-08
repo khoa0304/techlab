@@ -1,9 +1,11 @@
 package lab.cassandra.db.upgrade.service;
 
 import static com.datastax.driver.core.DataType.bigint;
+import static com.datastax.driver.core.DataType.list;
 import static com.datastax.driver.core.DataType.text;
 import static com.datastax.driver.core.DataType.uuid;
 import static com.datastax.driver.core.DataType.varchar;
+import static com.datastax.driver.core.DataType.cint;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.stereotype.Service;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.datastax.driver.mapping.DefaultNamingStrategy;
@@ -26,6 +29,7 @@ import com.datastax.driver.mapping.NamingConventions;
 import com.datastax.driver.mapping.PropertyMapper;
 
 import lab.cassandra.db.models.DocumentPdf;
+import lab.cassandra.db.models.SentenceWords;
 @Service
 public class DbTableCreationService {
 
@@ -69,6 +73,7 @@ public class DbTableCreationService {
 	public void setupDB() {
 		setupKeyspace(session, cassandraConfig.getKeyspaceName());
 		createDocumentPdfTable(session);
+		createSentenceWordsTable(session);
 	}
 
 	private void setupKeyspace(Session session, String keyspace) {
@@ -93,9 +98,9 @@ public class DbTableCreationService {
 		session.execute(SchemaBuilder.createTable(DocumentPdf.TABLE_NAME)
 				.ifNotExists()
 				.addPartitionKey(DocumentPdf.COLUMNS.FILE_NAME.getColumnName(), varchar())
-				.addClusteringColumn(DocumentPdf.COLUMNS.size.getColumnName(), bigint())
+				.addClusteringColumn(DocumentPdf.COLUMNS.SIZE.getColumnName(), bigint())
 				.addColumn(DocumentPdf.COLUMNS.FILE_CONTENT.getColumnName(), text())
-				.addColumn(DocumentPdf.COLUMNS.uuid.getColumnName(), uuid())
+				.addColumn(DocumentPdf.COLUMNS.UUID.getColumnName(), uuid())
 				);
 		// .addColumn("age", cint()).addColumn("profession", text())
 		// .addColumn("salary", cint()));
@@ -103,4 +108,19 @@ public class DbTableCreationService {
 		// @formatter on
 	}
 
+	private void createSentenceWordsTable(Session session) {
+
+		// @formatter off
+		session.execute(SchemaBuilder.createTable(SentenceWords.TABLE_NAME)
+				.ifNotExists()
+				.addPartitionKey(SentenceWords.COLUMNS.FILE_NAME.getColumnName(), varchar())
+				.addPartitionKey(SentenceWords.COLUMNS.TOTALWORDS.getColumnName(), cint())
+				.addPartitionKey(SentenceWords.COLUMNS.SENTENCELENGTH.getColumnName(), cint())
+				.addColumn(SentenceWords.COLUMNS.SENTENCE.getColumnName(), text())
+				.addColumn(SentenceWords.COLUMNS.WORD_ARRAY.getColumnName(),list(DataType.text()))
+				);
+
+
+		// @formatter on
+	}
 }

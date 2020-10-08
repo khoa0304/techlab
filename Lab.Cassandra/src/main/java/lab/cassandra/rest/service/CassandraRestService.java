@@ -28,6 +28,7 @@ import com.netflix.discovery.shared.Application;
 
 import lab.cassandra.db.models.DocumentPdf;
 import lab.cassandra.repository.service.DocumentPdfRepository;
+import lab.cassandra.repository.service.SentenceWordsRepository;
 import lab.common.file.dto.DocumentDto;
 import lab.common.file.handler.FileResourceUtil;
 
@@ -48,6 +49,9 @@ public class CassandraRestService {
 
 	@Autowired
 	private DocumentPdfRepository documentPdfRepository;
+	
+	@Autowired
+	private SentenceWordsRepository sentenceWordsRepository;
 	
 	@Autowired
 	private FileResourceUtil fileResourceUtil;
@@ -107,11 +111,6 @@ public class CassandraRestService {
 		}
 		
 		return new ResponseEntity<HttpStatus>(HttpStatus.BAD_REQUEST);
-	
-//	    final ByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0,fc.size());
-//	    DocumentPdf documentPdf = new DocumentPdf(documentDto.getFileName(), bb, fc.size());
-//	    documentPdfRepository.save(documentPdf);
-	    
 
 	}
 

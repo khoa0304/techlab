@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.internal.io.FileCommitProtocol.TaskCommitMessage;
 import org.apache.spark.sql.SparkSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,10 +55,17 @@ public class SparkConfigService {
 					    		   SentencesDTO.class,
 					    		   SentencesDTO[].class,
 					    		   WordsPerSentenceDTO.class,
-					    		   WordsPerSentenceDTO[].class
+					    		   WordsPerSentenceDTO[].class,
+					    		   TaskCommitMessage.class
 					    		   }
 					      
 					    )
+				
+				.set("spark.cassandra.connection.host", cassandraConfig.getContactPoints())
+				.set("spark.cassandra.connection.port", String.valueOf(cassandraConfig.getPort()))
+				.set("spark.cassandra.auth.username", cassandraConfig.getUsername())
+				.set("spark.cassandra.auth.password", cassandraConfig.getPassword())
+				
 				.setJars(new String[] { jarLocation });
 		return sparkConf;
 	}
