@@ -59,7 +59,7 @@ public class SentenceWords implements Serializable {
 
 	@Column(name = WORD_ARRAY_COL)
 	//@ClusteringColumn
-	@CassandraType(type=Name.LIST.TEXT)
+	@CassandraType(type=Name.LIST, typeArguments = { Name.TEXT })
 	private List<String> words;
 
 	@Column(name = TOTALSTEMS_COL)
