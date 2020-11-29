@@ -1,0 +1,40 @@
+@charset "ISO-8859-1";
+body {
+  font-family: Roboto;
+  font-size: 14px;
+  color: #333;
+}
+
+h1 {
+  font-family: Merriweather;
+  font-weight: 100;
+  letter-spacing: -0.03em;
+  text-align: center;
+  margin: 20px 0;
+}
+
+#menu {
+  margin: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#update-button {
+  width: 200px;
+  padding: 10px 20px;
+  background-color:  #00c07f;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#num-items-input {
+  padding: 5px;
+  margin: 0 0px 0 10px;
+  width: 45px;
+  text-align: right;
+}
+
+canvas { background:#fff; border:1px solid #ccc; width:400px; height:160px }

@@ -12,13 +12,17 @@ import java.util.Set;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
+import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
@@ -40,7 +44,7 @@ import lab.spark.task.WordStemTask;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
-
+import scala.Tuple2;
 
 public class FileUploadConsumerTestTask implements Serializable {
 
@@ -49,7 +53,7 @@ public class FileUploadConsumerTestTask implements Serializable {
 	private Logger logger = LoggerFactory.getLogger(FileUploadConsumerTestTask.class);
 
 	private SentenceWordsWriterFactory sentenceWordsWriterFactory = new SentenceWordsWriterFactory();
-	
+
 	public void processFileUpload(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
 			throws InterruptedException {
 
@@ -164,7 +168,8 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 							WordStemTask wordStemTask = new WordStemTask();
 							List<String> words = entry.getWords();
-							String[] stems = wordStemTask.lemmatatizer(posModel, words.toArray(new String[words.size()]));
+							String[] stems = wordStemTask.lemmatatizer(posModel,
+									words.toArray(new String[words.size()]));
 							int index = 0;
 							for (String stem : stems) {
 
@@ -188,9 +193,10 @@ public class FileUploadConsumerTestTask implements Serializable {
 		columnNameMappings.put("fileName", "filename");
 		columnNameMappings.put("sentence", "sentence");
 		columnNameMappings.put("words", "wordarray");
-		
-		//final SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
-		
+
+		// final SparkSession sparkSession =
+		// SparkSession.builder().config(sparkConfig).getOrCreate();
+
 		stemsDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO[]>>() {
 
 			/**
@@ -200,32 +206,73 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 			@Override
 			public void call(JavaRDD<WordsPerSentenceDTO[]> rdd) throws Exception {
-				
-				JavaRDD<WordsPerSentenceDTO> wordsPerJavaRDD = 
-						rdd.mapPartitions(new FlatMapFunction<Iterator<WordsPerSentenceDTO[]>, WordsPerSentenceDTO>() {
 
+				JavaRDD<WordsPerSentenceDTO> wordsPerJavaRDD = rdd
+						.mapPartitions(new FlatMapFunction<Iterator<WordsPerSentenceDTO[]>, WordsPerSentenceDTO>() {
+
+							private static final long serialVersionUID = 1L;
+
+							@Override
+							public Iterator<WordsPerSentenceDTO> call(Iterator<WordsPerSentenceDTO[]> t)
+									throws Exception {
+								List<WordsPerSentenceDTO> list = new ArrayList<WordsPerSentenceDTO>();
+								while (t.hasNext()) {
+									WordsPerSentenceDTO[] wordsPerSentenceDTOs = t.next();
+									logger.info("Number of wordsPerSentenceDTOs ", wordsPerSentenceDTOs.length);
+									list.addAll(Arrays.asList(wordsPerSentenceDTOs));
+								}
+								return list.iterator();
+							}
+						});
+
+				CassandraJavaUtil.javaFunctions(wordsPerJavaRDD)
+						.writerBuilder("lab", "sentencewords", sentenceWordsWriterFactory).saveToCassandra();
+
+				logger.info("Finished persisting RDD to cassandra");
+				
+				JavaRDD<String> wordsRdd = wordsPerJavaRDD.mapPartitions(new FlatMapFunction<Iterator<WordsPerSentenceDTO>, String>() {
 					private static final long serialVersionUID = 1L;
 
 					@Override
-					public Iterator<WordsPerSentenceDTO> call(Iterator<WordsPerSentenceDTO[]> t) throws Exception {
-						List<WordsPerSentenceDTO> list = new ArrayList<WordsPerSentenceDTO>();
+					public Iterator<String> call(Iterator<WordsPerSentenceDTO> t) throws Exception {
+						
+						List<String> list = new ArrayList<String>();
 						while(t.hasNext()) {
-							WordsPerSentenceDTO[] wordsPerSentenceDTOs = t.next();
-							logger.info("Number of wordsPerSentenceDTOs ", wordsPerSentenceDTOs.length);
-							list.addAll( Arrays.asList(wordsPerSentenceDTOs));
+							WordsPerSentenceDTO wordsPerSentenceDTO = t.next();
+							List<String> words = wordsPerSentenceDTO.getWords();
+							list.addAll(words);
 						}
+							
 						return list.iterator();
 					}
 				});
 				
+				JavaPairRDD<String, Integer> wordCountsPairRdd = wordsRdd.mapToPair(new PairFunction<String, String, Integer>() {
+					
+					private static final long serialVersionUID = 1L;
+					@Override
+					public Tuple2<String, Integer> call(String word) {
+						return new Tuple2<String,Integer>(word, 1);
+					}
+				}).reduceByKey(new Function2<Integer, Integer, Integer>() {
 				
-				CassandraJavaUtil
-									.javaFunctions(wordsPerJavaRDD)
-									.writerBuilder("lab", "sentencewords", sentenceWordsWriterFactory).saveToCassandra();
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					public Integer call(Integer i1, Integer i2) {
+						return i1 + i2;
+					}
+				});
 				
-				logger.info("Finished persisting RDD to cassandra");
+				List<Tuple2<String, Integer>> wordCount = wordCountsPairRdd.collect();
+				
+				for(Tuple2<String, Integer> tuple2 : wordCount) {
+					logger.info(tuple2._1 +" : " + tuple2._2);
+				}
 
 			}
+
+			
 
 		});
 
