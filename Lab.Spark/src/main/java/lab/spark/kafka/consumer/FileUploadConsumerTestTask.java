@@ -4,31 +4,40 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
-import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
 
 import com.datastax.spark.connector.japi.CassandraJavaUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,18 +63,34 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 	private SentenceWordsWriterFactory sentenceWordsWriterFactory = new SentenceWordsWriterFactory();
 
-	public void processFileUpload(SparkConf sparkConfig, Map<String, Object> configMap, String topicName)
+	final StructType schema = DataTypes.createStructType(
+			new StructField[] { 
+					DataTypes.createStructField("word", DataTypes.StringType, true),
+					DataTypes.createStructField("count", DataTypes.LongType, true)
+//					DataTypes.createStructField("wordarray", DataTypes.createArrayType(DataTypes.StringType), true)});
+					});
+	
+	public void processFileUpload(
+			SparkConf sparkConfig, 
+			Map<String, Object> configMap, 
+			String topicName,
+			RestTemplate restTemplate,
+			String kafkaServiceName)
 			throws InterruptedException {
 
-//		final StructType schema = DataTypes.createStructType(
-//				new StructField[] { 
-//						DataTypes.createStructField("filename", DataTypes.StringType, true),
-//						DataTypes.createStructField("sentence", DataTypes.StringType, true),
-//						DataTypes.createStructField("wordarray", DataTypes.createArrayType(DataTypes.StringType), true)});
-
-		JavaStreamingContext jssc = new JavaStreamingContext(sparkConfig, Durations.seconds(30));
+		if(restTemplate!=null) {
+			String response = 
+					restTemplate.exchange("http://"+ kafkaServiceName +"/fileUpload/ping?name=FromSparkStreaming",
+	        		HttpMethod.GET, null,String.class).getBody();
+			logger.info("Response from Kafka " + response);
+			
+		}
+		
+		SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
+		
+		JavaStreamingContext jssc = new JavaStreamingContext(JavaSparkContext.fromSparkContext(sparkSession.sparkContext()), Durations.seconds(30));
 		// jssc.checkpoint("./checkpoint/");
-
+		
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
 				LocationStrategies.PreferConsistent(),
@@ -189,10 +214,6 @@ public class FileUploadConsumerTestTask implements Serializable {
 					}
 				});
 
-		final Map<String, String> columnNameMappings = new HashMap<>();
-		columnNameMappings.put("fileName", "filename");
-		columnNameMappings.put("sentence", "sentence");
-		columnNameMappings.put("words", "wordarray");
 
 		// final SparkSession sparkSession =
 		// SparkSession.builder().config(sparkConfig).getOrCreate();
@@ -263,52 +284,26 @@ public class FileUploadConsumerTestTask implements Serializable {
 						return i1 + i2;
 					}
 				});
+		
+				Dataset<Row> dataset = 
+						sparkSession.createDataset(
+								JavaPairRDD.toRDD(wordCountsPairRdd),
+								Encoders.tuple(Encoders.STRING(),Encoders.INT())).toDF("word","count");
+						
+				dataset.createOrReplaceTempView("table");
+				Dataset<Row> topWordsCount = sparkSession.sql("select word, count from table order by count desc limit 20");
 				
-				List<Tuple2<String, Integer>> wordCount = wordCountsPairRdd.collect();
+				topWordsCount.show();
 				
-				for(Tuple2<String, Integer> tuple2 : wordCount) {
-					logger.info(tuple2._1 +" : " + tuple2._2);
-				}
-
+				sendDataSetToDashboard(topWordsCount);
+				
 			}
 
 			
 
 		});
 
-//		stemsDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO[]>>() {
-//		
-//			private static final long serialVersionUID = 1L;
-//
-//			@Override
-//			public void call(JavaRDD<WordsPerSentenceDTO[]> javaRDD) throws Exception {
-//				
-//				List<WordsPerSentenceDTO[]> list = javaRDD.collect();
-//				if (list.size() > 0) {
-//				
-//					WordsPerSentenceDTO[] fileNameAndWordsDTO = list.get(0);
-//					logger.info("\n\n=============================================");
-//					
-//					logger.info("FileName {} - Number of RDD {} ",fileNameAndWordsDTO[0].getFileName(), list.size());
-//					
-//					for (WordsPerSentenceDTO[] fileNameAndSentencesDTOArray : list) {
-//					
-//						for(WordsPerSentenceDTO fileNameAndSentencesDTO:fileNameAndSentencesDTOArray) {
-//							StringBuilder sb = new StringBuilder();
-//							for(String stem : fileNameAndSentencesDTO.getWords()) {
-//								sb.append(stem).append(" ");
-//							}
-//							logger.info("Sentence: {} ",fileNameAndSentencesDTO.getSentence());
-//							logger.info("Stem/Word {})", sb.toString());
-//						    sb = null;
-//						}
-//					}
-//					
-//					// sentencesPerFileName.put(row, value)
-//					logger.info("=============================================");
-//				}
-//			}
-//		});
+
 
 		try {
 			jssc.start();
@@ -317,5 +312,42 @@ public class FileUploadConsumerTestTask implements Serializable {
 			logger.error("", e);
 		}
 
+	}
+	
+	
+	
+	
+	private void sendDataSetToDashboard(Dataset<Row> dataset) {
+		
+		String commaSeparatedWords = 
+				dataset.select("word").
+				collectAsList().stream().
+				map(new java.util.function.Function<Row, String>() {
+
+					@Override
+					public String apply(Row row) {
+						
+						return row.getString(0);
+					}
+				}).
+				collect(Collectors.joining(","));
+		
+		
+		String commaSeparatedCounts  = 
+				dataset.select("count").
+				collectAsList().stream().
+				map(new java.util.function.Function<Row, String>() {
+
+					@Override
+					public String apply(Row row) {
+						
+						return String.valueOf(row.getInt(0));
+					}
+				}).
+				collect(Collectors.joining(","));
+		
+		logger.info("Labels: {} - Count {} ", commaSeparatedWords,commaSeparatedCounts);
+	
+				
 	}
 }

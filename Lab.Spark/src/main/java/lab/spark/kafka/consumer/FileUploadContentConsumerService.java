@@ -13,7 +13,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import lab.spark.config.KafkaConfigService;
 import lab.spark.config.OpenNLPConfigService;
@@ -32,6 +34,12 @@ public class FileUploadContentConsumerService {
 
 	@Autowired
 	private OpenNLPConfigService openNLPConfig;
+	
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@Value("${kafka.service.name}")
+	private String kafkaServiceName;
 
 	//private StructType fileUploadContentSchema;
 
@@ -88,7 +96,12 @@ public class FileUploadContentConsumerService {
 				
 		String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
 		
-		KafkaConsumerTask kafkaConsumerTask = new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName), topicName,openNLPConfig);
+		KafkaConsumerTask kafkaConsumerTask = 
+				new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName),
+						topicName,
+						openNLPConfig,
+						restTemplate,
+						kafkaServiceName);
 		
 		scheduledExecutorService.schedule(kafkaConsumerTask,5,TimeUnit.SECONDS);
 		

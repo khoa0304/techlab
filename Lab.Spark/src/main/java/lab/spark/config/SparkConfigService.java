@@ -48,7 +48,7 @@ public class SparkConfigService {
 				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.local.ip",sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-				.set("spark.kryo.registrationRequired", "true")
+				.set("spark.kryo.registrationRequired", "false")
 				.registerKryoClasses(
 					      new Class<?>[] {
 					    		   FileUploadContentDTO.class,
@@ -65,6 +65,7 @@ public class SparkConfigService {
 				.set("spark.cassandra.connection.port", String.valueOf(cassandraConfig.getPort()))
 				.set("spark.cassandra.auth.username", cassandraConfig.getUsername())
 				.set("spark.cassandra.auth.password", cassandraConfig.getPassword())
+				.set("spark.cassandra.connection.timeoutMS", "120000")
 				
 				.setJars(new String[] { jarLocation });
 		return sparkConf;

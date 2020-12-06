@@ -42,7 +42,7 @@ public class NlpUtil {
 		if(!STOP_WORD_SET.isEmpty()) return STOP_WORD_SET;
 		
 		
-		for(int i = 1 ; i <= 3; i ++) {
+		for(int i = 1 ; i <= 4; i ++) {
 			
 			String fileLocation = String.format(FILE_LOCATION_PREFIX, i);
 			try {

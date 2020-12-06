@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestTemplate;
 
 import lab.spark.config.OpenNLPConfigService;
 import lab.spark.config.SparkConfigService;
@@ -17,16 +18,22 @@ public class KafkaConsumerTask implements Runnable {
 	private  Map<String, Object> configMap;
 	private String topicName;
 	
+	private RestTemplate restTemplate;
+	private String kafkaServiceName;
 	
 	public KafkaConsumerTask(
 			SparkConfigService sparkConfigService,
 			Map<String, Object> configMap, 
 			String topicName,
-			OpenNLPConfigService openNLPConfig) {
+			OpenNLPConfigService openNLPConfig,
+			RestTemplate restTemplate,
+			String kafkaServiceName) {
 		
 		this.sparkConfigService = sparkConfigService;
 		this.configMap = configMap;
 		this.topicName = topicName;
+		this.restTemplate = restTemplate;
+		this.kafkaServiceName = kafkaServiceName;
 
 	}
 	@Override
@@ -38,7 +45,7 @@ public class KafkaConsumerTask implements Runnable {
 			
 			fileUploadConsumerTestTask.processFileUpload(
 					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()), 
-					configMap, topicName);
+					configMap, topicName,restTemplate,kafkaServiceName);
 			
 		} catch (UnknownHostException | InterruptedException | ClassNotFoundException e) {
 			logger.warn("", e);

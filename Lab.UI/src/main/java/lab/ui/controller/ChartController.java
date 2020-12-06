@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
@@ -37,6 +38,14 @@ public class ChartController {
     public String updateData(@RequestBody WordsPerSentenceDTO wordsPerSentenceDTO) {
     	return "chart2";
     }
+    
+	
+	@GetMapping("/ping")
+	@ResponseBody
+	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Hello UI Service") String name) {
+		return "UI Chart Controller Service responds " + name;
+	}	
+    
     
     private long counter = 0;
     
