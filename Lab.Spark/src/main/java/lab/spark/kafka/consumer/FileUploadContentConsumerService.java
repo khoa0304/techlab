@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,21 +36,26 @@ public class FileUploadContentConsumerService {
 	@Autowired
 	private OpenNLPConfigService openNLPConfig;
 	
+	@Value("${kafka.service.name}")
+	private String kafkaServiceName;
+
 	@Autowired
 	private RestTemplate restTemplate;
 	
-	@Value("${kafka.service.name}")
-	private String kafkaServiceName;
+	
+	@Value("${spark.stream.sink.topic.list}")
+	private String sparkStreamingSinkTopicList;
 
 	//private StructType fileUploadContentSchema;
 
 	@PostConstruct
 	private void initialize() {
-//		fileUploadContentSchema =
-//
-//				DataTypes.createStructType(
-//						new StructField[] { DataTypes.createStructField("fileName", DataTypes.StringType, false),
-//								DataTypes.createStructField("fileContent", DataTypes.StringType, false) });
+
+		String response = restTemplate.exchange(
+				"http://"+ kafkaServiceName +"/kafka/config/topic/create?topicName="+sparkStreamingSinkTopicList,
+				HttpMethod.GET, null,String.class).getBody();
+		
+        logger.info("Response from Kafka " + response);
 
 		startSparkKafkaStreaming();
 
@@ -100,8 +106,7 @@ public class FileUploadContentConsumerService {
 				new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName),
 						topicName,
 						openNLPConfig,
-						restTemplate,
-						kafkaServiceName);
+						sparkStreamingSinkTopicList);
 		
 		scheduledExecutorService.schedule(kafkaConsumerTask,5,TimeUnit.SECONDS);
 		

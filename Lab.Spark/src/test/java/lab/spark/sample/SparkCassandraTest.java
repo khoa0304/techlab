@@ -30,7 +30,7 @@ public class SparkCassandraTest extends CommonTestSetup {
 	private OpenNLPConfigService openNLPConfig;
 	
 	@Test
-	public void test1() throws IOException {
+	public void test1() throws IOException, ClassNotFoundException {
 		
 		SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();
 		

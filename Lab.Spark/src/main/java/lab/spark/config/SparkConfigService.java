@@ -39,7 +39,7 @@ public class SparkConfigService {
 	
 
 
-	public SparkConf getSparkConfig(String className) throws UnknownHostException, ClassNotFoundException {
+	public SparkConf getSparkConfig(String className) {
 
 		SparkConf sparkConf = new SparkConf();
 		sparkConf.setAppName(className + ": " + simpleDateFormat.format(new Date()));
@@ -57,7 +57,7 @@ public class SparkConfigService {
 					    		   WordsPerSentenceDTO.class,
 					    		   WordsPerSentenceDTO[].class,
 					    		   TaskCommitMessage.class
-					    		   }
+					       }
 					      
 					    )
 				
@@ -73,7 +73,7 @@ public class SparkConfigService {
 
 	//~~~~~~~~~~~~~ Below Not being used for actual code yet ~~~~~~~~~~~~ //
 	
-	public JavaSparkContext getJavaSparkContext(String className) throws UnknownHostException {
+	public JavaSparkContext getJavaSparkContext(String className) {
 		SparkSession sparkSession = getSparkSession(className);
 		JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
 		// JavaSparkContext sparkContext = new
@@ -82,7 +82,7 @@ public class SparkConfigService {
 	}
 	
 	
-	public SparkSession getSparkSession(String className) {
+	public SparkSession getSparkSession(String className){
 
 		SparkSession sparkSession = getBasicSparkSessionBuilder(className).getOrCreate();
 		return sparkSession;
@@ -105,7 +105,7 @@ public class SparkConfigService {
 		return sparkConf;
 	}
 
-	public SparkSession getSparkSessionForCassandra(String className) {
+	public SparkSession getSparkSessionForCassandra(String className) throws UnknownHostException, ClassNotFoundException {
 
 		SparkSession sparkSession = getBasicSparkSessionBuilder(className)
 				.config("spark.cassandra.connection.host", cassandraConfig.getContactPoints())
@@ -117,22 +117,11 @@ public class SparkConfigService {
 	}
 
 	
-	private org.apache.spark.sql.SparkSession.Builder getBasicSparkSessionBuilder(String className){
+	private org.apache.spark.sql.SparkSession.Builder getBasicSparkSessionBuilder(String className) {
 		
-		org.apache.spark.sql.SparkSession.Builder sparkSessionBuilder = SparkSession.builder()
-				.master("spark://"+ sparkCommonConfig.getSparkMasterHostPort())
-				.appName(className + ": " + simpleDateFormat.format(new Date()))
-				.config("spark.jars", jarLocation)
-				.config("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
-				// config("spark.driver.cores", "2")
-				//.config("spark.shuffle.service.enabled", "false")
-				//.config("spark.dynamicAllocation.enabled", "false")
-				.config("SPARK_LOCAL_IP",sparkCommonConfig.getSpark_Driver_Host())
-				.config("spark.driver.memory", "4g");
-		
-		
+		org.apache.spark.sql.SparkSession.Builder sparkSessionBuilder = 
+				SparkSession.builder().config(getSparkConfig(className));
 		
 		return sparkSessionBuilder;
-		
 	}
 }

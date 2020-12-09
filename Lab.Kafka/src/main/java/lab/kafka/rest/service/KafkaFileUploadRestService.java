@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lab.common.file.dto.DocumentDto;
 import lab.common.file.handler.FileResourceUtil;
+import lab.kafka.config.TopicCreationService;
 import lab.kafka.dto.FileContentDTO;
 import lab.kafka.producer.KafkaEventProducer;
 
@@ -33,6 +35,11 @@ public class KafkaFileUploadRestService {
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 	
+	@Autowired
+	private TopicCreationService topicCreationService;
+	
+	@Value("${zookeeper.server.list}")
+	private String zookeeperServerList;
 	
 	@GetMapping("/ping")
 	@ResponseBody
@@ -60,6 +67,23 @@ public class KafkaFileUploadRestService {
 			logger.error("{}",e);
 		}
 		
+		return new ResponseEntity<HttpStatus>(HttpStatus.BAD_REQUEST);
+	
+	}
+	
+	
+	@PostMapping(path = "/kafka/topic/create",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<HttpStatus> createKafkaTopic(@RequestBody String topicName) {
+
+		try {
+	
+			topicCreationService.createKafkaTopic(zookeeperServerList, topicName, topicName, topicName);
+		    return new ResponseEntity<HttpStatus>(HttpStatus.OK);
+			
+		} catch (Exception e) {
+			logger.error("{}",e);
+		}
 		return new ResponseEntity<HttpStatus>(HttpStatus.BAD_REQUEST);
 	
 	}

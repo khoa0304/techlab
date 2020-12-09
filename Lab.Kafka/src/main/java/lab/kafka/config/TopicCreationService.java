@@ -14,8 +14,11 @@ import kafka.zk.KafkaZkClient;
 public class TopicCreationService {
 
 	
-	public void createKafkaTopic(String zookeeperHost, String topicName,
-			String metricGroup,String metricType) {
+	public void createKafkaTopic(
+			String zookeeperHost,
+			String topicName,
+			String metricGroup,
+			String metricType) {
 	
 		Boolean isSucre = false;
 		int sessionTimeoutMs = 200000;

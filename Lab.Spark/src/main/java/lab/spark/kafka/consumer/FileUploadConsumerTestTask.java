@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -36,8 +37,6 @@ import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.client.RestTemplate;
 
 import com.datastax.spark.connector.japi.CassandraJavaUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,22 +73,15 @@ public class FileUploadConsumerTestTask implements Serializable {
 			SparkConf sparkConfig, 
 			Map<String, Object> configMap, 
 			String topicName,
-			RestTemplate restTemplate,
-			String kafkaServiceName)
-			throws InterruptedException {
-
-		if(restTemplate!=null) {
-			String response = 
-					restTemplate.exchange("http://"+ kafkaServiceName +"/fileUpload/ping?name=FromSparkStreaming",
-	        		HttpMethod.GET, null,String.class).getBody();
-			logger.info("Response from Kafka " + response);
-			
-		}
+			String sparkStreamingSinkTopicList)throws InterruptedException {
+		
+		final String kafkaServerList = (String) configMap.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG);
 		
 		SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
 		
-		JavaStreamingContext jssc = new JavaStreamingContext(JavaSparkContext.fromSparkContext(sparkSession.sparkContext()), Durations.seconds(30));
-		// jssc.checkpoint("./checkpoint/");
+		JavaStreamingContext jssc = 
+				new JavaStreamingContext(JavaSparkContext.fromSparkContext(sparkSession.sparkContext()), Durations.seconds(30));
+		jssc.checkpoint("./checkpoint/");
 		
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
@@ -175,9 +167,6 @@ public class FileUploadConsumerTestTask implements Serializable {
 		JavaDStream<WordsPerSentenceDTO[]> stemsDStream = wordsDStream
 				.map(new Function<WordsPerSentenceDTO[], WordsPerSentenceDTO[]>() {
 
-					/**
-					 * 
-					 */
 					private static final long serialVersionUID = 1L;
 					private POSModel posModel = null;
 
@@ -220,9 +209,6 @@ public class FileUploadConsumerTestTask implements Serializable {
 
 		stemsDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO[]>>() {
 
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -295,7 +281,14 @@ public class FileUploadConsumerTestTask implements Serializable {
 				
 				topWordsCount.show();
 				
-				sendDataSetToDashboard(topWordsCount);
+				topWordsCount.selectExpr("CAST(current_timestamp() AS STRING) AS key", "CAST(count AS STRING) AS value")
+				  .writeStream()
+				  .format("kafka")
+				  .option("kafka.bootstrap.servers", kafkaServerList)
+				  .option("topic", sparkStreamingSinkTopicList)
+				  .start();
+				
+				//sendDataSetToDashboard(topWordsCount);
 				
 			}
 
@@ -317,37 +310,37 @@ public class FileUploadConsumerTestTask implements Serializable {
 	
 	
 	
-	private void sendDataSetToDashboard(Dataset<Row> dataset) {
-		
-		String commaSeparatedWords = 
-				dataset.select("word").
-				collectAsList().stream().
-				map(new java.util.function.Function<Row, String>() {
-
-					@Override
-					public String apply(Row row) {
-						
-						return row.getString(0);
-					}
-				}).
-				collect(Collectors.joining(","));
-		
-		
-		String commaSeparatedCounts  = 
-				dataset.select("count").
-				collectAsList().stream().
-				map(new java.util.function.Function<Row, String>() {
-
-					@Override
-					public String apply(Row row) {
-						
-						return String.valueOf(row.getInt(0));
-					}
-				}).
-				collect(Collectors.joining(","));
-		
-		logger.info("Labels: {} - Count {} ", commaSeparatedWords,commaSeparatedCounts);
-	
-				
-	}
+//	private void sendDataSetToDashboard(
+//			Dataset<Row> dataset) {
+//		
+//		String commaSeparatedWords = 
+//				dataset.select("word").
+//				collectAsList().stream().
+//				map(new java.util.function.Function<Row, String>() {
+//
+//					@Override
+//					public String apply(Row row) {
+//						
+//						return row.getString(0);
+//					}
+//				}).
+//				collect(Collectors.joining(","));
+//		
+//		
+//		String commaSeparatedCounts  = 
+//				dataset.select("count").
+//				collectAsList().stream().
+//				map(new java.util.function.Function<Row, String>() {
+//
+//					@Override
+//					public String apply(Row row) {
+//						
+//						return String.valueOf(row.getInt(0));
+//					}
+//				}).
+//				collect(Collectors.joining(","));
+//		
+//		logger.info("Labels: {} - Count {} ", commaSeparatedWords,commaSeparatedCounts);
+//					
+//	}
 }
