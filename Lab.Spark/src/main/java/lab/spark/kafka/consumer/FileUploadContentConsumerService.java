@@ -51,12 +51,6 @@ public class FileUploadContentConsumerService {
 	@PostConstruct
 	private void initialize() {
 
-		String response = restTemplate.exchange(
-				"http://"+ kafkaServiceName +"/kafka/config/topic/create?topicName="+sparkStreamingSinkTopicList,
-				HttpMethod.GET, null,String.class).getBody();
-		
-        logger.info("Response from Kafka " + response);
-
 		startSparkKafkaStreaming();
 
 	}
@@ -94,9 +88,7 @@ public class FileUploadContentConsumerService {
 				Thread t = Executors.defaultThreadFactory().newThread(r);
 				t.setDaemon(true);
 				t.setName("Spark-Kafka-Consumer-");
-				return t;
-
-				
+				return t;				
 			}
 		});
 				
@@ -106,7 +98,9 @@ public class FileUploadContentConsumerService {
 				new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName),
 						topicName,
 						openNLPConfig,
-						sparkStreamingSinkTopicList);
+						sparkStreamingSinkTopicList,
+						restTemplate,
+						kafkaServiceName);
 		
 		scheduledExecutorService.schedule(kafkaConsumerTask,5,TimeUnit.SECONDS);
 		

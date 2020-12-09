@@ -35,9 +35,6 @@ public class KafkaFileUploadRestService {
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 	
-	@Autowired
-	private TopicCreationService topicCreationService;
-	
 	@Value("${zookeeper.server.list}")
 	private String zookeeperServerList;
 	
@@ -67,23 +64,6 @@ public class KafkaFileUploadRestService {
 			logger.error("{}",e);
 		}
 		
-		return new ResponseEntity<HttpStatus>(HttpStatus.BAD_REQUEST);
-	
-	}
-	
-	
-	@PostMapping(path = "/kafka/topic/create",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public ResponseEntity<HttpStatus> createKafkaTopic(@RequestBody String topicName) {
-
-		try {
-	
-			topicCreationService.createKafkaTopic(zookeeperServerList, topicName, topicName, topicName);
-		    return new ResponseEntity<HttpStatus>(HttpStatus.OK);
-			
-		} catch (Exception e) {
-			logger.error("{}",e);
-		}
 		return new ResponseEntity<HttpStatus>(HttpStatus.BAD_REQUEST);
 	
 	}

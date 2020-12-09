@@ -204,6 +204,7 @@ public class FileUploadConsumerTestTask implements Serializable {
 				});
 
 
+	
 		// final SparkSession sparkSession =
 		// SparkSession.builder().config(sparkConfig).getOrCreate();
 
@@ -281,12 +282,14 @@ public class FileUploadConsumerTestTask implements Serializable {
 				
 				topWordsCount.show();
 				
-				topWordsCount.selectExpr("CAST(current_timestamp() AS STRING) AS key", "CAST(count AS STRING) AS value")
-				  .writeStream()
-				  .format("kafka")
-				  .option("kafka.bootstrap.servers", kafkaServerList)
-				  .option("topic", sparkStreamingSinkTopicList)
-				  .start();
+//				topWordsCount.selectExpr("CAST(current_timestamp() AS STRING) AS key", "CAST(count AS STRING) AS value")
+//				  .writeStream()
+//				  .format("kafka")
+//				  .option("kafka.bootstrap.servers", kafkaServerList)
+//				  .option("topic", sparkStreamingSinkTopicList)
+//				  .start();
+				
+				topWordsCount.writeStream().format("console").start();
 				
 				//sendDataSetToDashboard(topWordsCount);
 				
