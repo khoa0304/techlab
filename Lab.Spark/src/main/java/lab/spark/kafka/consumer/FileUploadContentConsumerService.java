@@ -101,7 +101,7 @@ public class FileUploadContentConsumerService {
 						restTemplate,
 						kafkaServiceName);
 		
-		scheduledExecutorService.schedule(kafkaConsumerTask,5,TimeUnit.SECONDS);
+		scheduledExecutorService.schedule(kafkaConsumerTask,60,TimeUnit.SECONDS);
 		
 		logger.info("Finished scheduling Spark-Kafka Consumer for streaming from topic {} ",topicName);
 
