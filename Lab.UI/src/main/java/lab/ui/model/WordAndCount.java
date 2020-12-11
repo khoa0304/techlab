@@ -1,11 +1,11 @@
 package lab.ui.model;
 
-public class TagAndCount {
+public class WordAndCount {
 
 	private String[] sLabel;
 	private long[] sData;
 	
-	public TagAndCount(String[] sLabel,long[] sData) {
+	public WordAndCount(String[] sLabel,long[] sData) {
 		this.sLabel = sLabel;
 		this.sData = sData;
 	}

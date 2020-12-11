@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -54,11 +53,11 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 import scala.Tuple2;
 
-public class FileUploadConsumerTestTask implements Serializable {
+public class FileUploadKafkaConsumerWordMining implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Logger logger = LoggerFactory.getLogger(FileUploadConsumerTestTask.class);
+	private Logger logger = LoggerFactory.getLogger(FileUploadKafkaConsumerWordMining.class);
 
 	private SentenceWordsWriterFactory sentenceWordsWriterFactory = new SentenceWordsWriterFactory();
 
@@ -280,23 +279,15 @@ public class FileUploadConsumerTestTask implements Serializable {
 				dataset.createOrReplaceTempView("table");
 				Dataset<Row> topWordsCount = sparkSession.sql("select word, count from table order by count desc limit 20");
 				
-				topWordsCount.show();
+				//dataset.write().format("console").save();
 				
-//				topWordsCount.selectExpr("CAST(current_timestamp() AS STRING) AS key", "CAST(count AS STRING) AS value")
-//				  .writeStream()
-//				  .format("kafka")
-//				  .option("kafka.bootstrap.servers", kafkaServerList)
-//				  .option("topic", sparkStreamingSinkTopicList)
-//				  .start();
-				
-				topWordsCount.writeStream().format("console").start();
-				
-				//sendDataSetToDashboard(topWordsCount);
-				
+				topWordsCount.selectExpr("CAST(word AS STRING) AS key", "CAST(count AS STRING) AS value")
+				  .write()
+				  .format("kafka")
+				  .option("kafka.bootstrap.servers", kafkaServerList)
+				  .option("topic", sparkStreamingSinkTopicList)
+				  .save();
 			}
-
-			
-
 		});
 
 

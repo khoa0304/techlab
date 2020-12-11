@@ -51,8 +51,8 @@ public class KafkaConsumerTask implements Runnable {
 	        logger.info("Response from Kafka " + response);
 			
 			//final SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();		
-			FileUploadConsumerTestTask fileUploadConsumerTestTask = 
-					new FileUploadConsumerTestTask();
+			FileUploadKafkaConsumerWordMining fileUploadConsumerTestTask = 
+					new FileUploadKafkaConsumerWordMining();
 			
 			fileUploadConsumerTestTask.processFileUpload(
 					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()), 

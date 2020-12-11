@@ -1,5 +1,14 @@
 package lab.ui.controller;
 
+import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,13 +20,32 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 
-import lab.ui.model.TagAndCount;
+import lab.ui.kafka.consumer.WordCountKafkaConsumer;
+import lab.ui.model.WordAndCount;
 import lab.ui.model.WordsPerSentenceDTO;
 
 @Controller
 @RequestMapping("/chart")
 public class ChartController {
 
+	@Value("${kafka.server.list}")
+	private String kafkaServerList;
+	
+	@Value("${spark.stream.sink.wordcount.topic}")
+	private String sparkStreamingSinkWordCountTopic;
+	
+	private WordCountKafkaConsumer kafkaEventConsumer;
+	
+	@PostConstruct
+	public void startExecutorService() {
+		
+	    kafkaEventConsumer = new WordCountKafkaConsumer();
+		kafkaEventConsumer.createConsumer(kafkaServerList,sparkStreamingSinkWordCountTopic, "UI-WordCount-Consumer-Group");
+		
+		ExecutorService scheduledExecutor = Executors.newSingleThreadExecutor();
+		scheduledExecutor.submit(kafkaEventConsumer);
+	}
+	
     @GetMapping
     public String main() {
         return "index";
@@ -45,16 +73,11 @@ public class ChartController {
 	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Hello UI Service") String name) {
 		return "UI Chart Controller Service responds " + name;
 	}	
-    
-    
-    private long counter = 0;
-    
+  
     @GetMapping({"/refreshData"})
     public  @ResponseBody String refreshData(Model model) {
-    	System.out.print(model);
-    	
-    	TagAndCount tagAndCount1 = new TagAndCount(new String[]{""},new long[] {counter});
-    	String json = new Gson().toJson(tagAndCount1);
+    	WordAndCount wordAndCount = kafkaEventConsumer.getWordAndCount();
+    	String json = new Gson().toJson(wordAndCount);
     	
         return json;
     }

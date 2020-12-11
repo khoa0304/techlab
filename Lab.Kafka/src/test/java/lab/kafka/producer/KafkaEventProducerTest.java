@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.producer.Producer;
@@ -106,5 +107,34 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 		}
 		
 		System.out.println("End");
+	}
+	
+	
+	@Test
+	public void testConsumerWordCount() throws InterruptedException, ExecutionException {
+
+		String kafkaServerList = kafkaConfig.getKafkaServerList();
+	
+		
+		KafkaEventConsumer kafkaEventConsumer = new KafkaEventConsumer();
+		kafkaEventConsumer.createConsumer(kafkaServerList,"WordCountTopic", "WordCountTopic");
+		
+		ExecutorService scheduledExecutor = Executors.newSingleThreadExecutor();
+		scheduledExecutor.submit(kafkaEventConsumer);
+		
+		
+		try {
+		
+			while(true) {
+				System.out.println("test");
+				TimeUnit.SECONDS.sleep(20);
+			}
+		} finally {
+			
+			kafkaEventConsumer.stopped();
+			scheduledExecutor.shutdown();
+		
+			
+		}
 	}
 }

@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -43,8 +42,8 @@ public class FileUploadContentConsumerService {
 	private RestTemplate restTemplate;
 	
 	
-	@Value("${spark.stream.sink.topic.list}")
-	private String sparkStreamingSinkTopicList;
+	@Value("${spark.stream.sink.wordcount.topic}")
+	private String sparkStreamingSinkWordCountTopic;
 
 	//private StructType fileUploadContentSchema;
 
@@ -98,7 +97,7 @@ public class FileUploadContentConsumerService {
 				new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName),
 						topicName,
 						openNLPConfig,
-						sparkStreamingSinkTopicList,
+						sparkStreamingSinkWordCountTopic,
 						restTemplate,
 						kafkaServiceName);
 		
