@@ -61,14 +61,18 @@ public class WordCountKafkaConsumer implements Callable<Void>{
 				wordCountList.add(Long.valueOf(record.value()));
 			}
 			
-			wordAndCount.setsLabel(wordList.toArray(new String[wordList.size()]));
-			
-			long[] wordCountArray = new long[wordCountList.size()];
-			int i = 0;
-			for(Long count : wordCountList) {
-				wordCountArray[i++] = count;
+			if(wordList.size() > 0 && wordCountList.size() > 0 && wordList.size() == wordCountList.size()) {
+				
+				wordAndCount.setsLabel(wordList.toArray(new String[wordList.size()]));
+				
+				long[] wordCountArray = new long[wordCountList.size()];
+				int i = 0;
+				for(Long count : wordCountList) {
+					wordCountArray[i++] = count;
+				}
+				wordAndCount.setsData(wordCountArray);	
 			}
-			wordAndCount.setsData(wordCountArray);
+			
 		}
 		
 		return null;
