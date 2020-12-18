@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import lab.ui.model.WordAndCount;
 
-public class WordCountKafkaConsumer extends CommonKafkaConsumerConfig implements Callable<Void>{
+public class SentenceAndTotalWordCountKafkaConsumer extends CommonKafkaConsumerConfig implements Callable<Void>{
 	
-	private Logger logger = LoggerFactory.getLogger(WordCountKafkaConsumer.class); 
+	private Logger logger = LoggerFactory.getLogger(SentenceAndTotalWordCountKafkaConsumer.class); 
 
 	private volatile boolean isStopped = false;
 	

@@ -20,6 +20,7 @@ public class KafkaConsumerTask implements Runnable {
 	private String topicName;
 
 	private String sparkStreamingSinkTopicList;
+	private String sparkStreamingSinkSentenceCountTopic;
 	private RestTemplate restTemplate;
 	private String kafkaServiceName;
 	
@@ -29,6 +30,7 @@ public class KafkaConsumerTask implements Runnable {
 			String topicName,
 			OpenNLPConfigService openNLPConfig,
 			String sparkStreamingSinkTopicList,
+			String sparkStreamingSinkSentenceCountTopic,
 			RestTemplate restTemplate,
 			String kafkaServiceName) {
 		
@@ -36,6 +38,7 @@ public class KafkaConsumerTask implements Runnable {
 		this.configMap = configMap;
 		this.topicName = topicName;
 		this.sparkStreamingSinkTopicList = sparkStreamingSinkTopicList;
+		this.sparkStreamingSinkSentenceCountTopic = sparkStreamingSinkSentenceCountTopic;
 		this.restTemplate = restTemplate;
 		this.kafkaServiceName = kafkaServiceName;
 		
@@ -51,12 +54,19 @@ public class KafkaConsumerTask implements Runnable {
 	        logger.info("Response from Kafka " + response);
 			
 			//final SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();		
-			FileUploadKafkaConsumerWordMining fileUploadConsumerTestTask = 
-					new FileUploadKafkaConsumerWordMining();
+			WordCountKafkaStreamConsumer fileUploadConsumerTestTask = 
+					new WordCountKafkaStreamConsumer();
 			
 			fileUploadConsumerTestTask.processFileUpload(
 					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()), 
 					configMap, topicName,sparkStreamingSinkTopicList);
+			
+			SentenceCountKafkaStreamConsumer sentenceCountKafkaStreamConsumer =
+					new SentenceCountKafkaStreamConsumer();
+			
+			sentenceCountKafkaStreamConsumer.processFileUpload(
+					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()), 
+					configMap, topicName, sparkStreamingSinkSentenceCountTopic);
 			
 		} catch (Exception e) {
 			logger.warn("", e);

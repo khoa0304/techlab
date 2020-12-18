@@ -65,8 +65,8 @@ public class SparkConfigService {
 				.set("spark.cassandra.connection.port", String.valueOf(cassandraConfig.getPort()))
 				.set("spark.cassandra.auth.username", cassandraConfig.getUsername())
 				.set("spark.cassandra.auth.password", cassandraConfig.getPassword())
-				.set("spark.cassandra.connection.timeoutMS", "120000")
-				.set("spark.cassandra.read.timeoutMS", "120000")
+				.set("spark.cassandra.connection.timeoutMS", "3600000")
+				.set("spark.cassandra.read.timeoutMS", "3600000")
 				
 				.setJars(new String[] { jarLocation });
 		return sparkConf;

@@ -110,7 +110,7 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 	}
 	
 	
-	@Test(enabled=false)
+	@Test(enabled=true)
 	public void testConsumerWordCount() throws InterruptedException, ExecutionException {
 
 		String kafkaServerList = kafkaConfig.getKafkaServerList();

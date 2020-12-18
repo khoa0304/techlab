@@ -25,14 +25,19 @@
 </head>
 <body>
 
-	<h1>Trending Words Count</h1>
+	<h1>Document Analysis</h1>
 
 
 	<div id="wrapper" class="chart-container" style="position: relative; height:20vh; width:40vw" >
-		<canvas id="bar-chart-horizontal"></canvas>
+		<canvas id="top-word-count-bar-chart-horizontal"></canvas>
+	</div>
+	
+    <div id="wrapper" class="chart-container" style="position: relative; height:20vh; width:40vw" >
+		<canvas id="sentence-word-count-bar-chart-horizontal"></canvas>
 	</div>
 
 	<script th:src="@{/js/chart/chart2.js}"></script>
+	<script th:src="@{/js/chart/chart3.js}"></script>
 
 
 </body>

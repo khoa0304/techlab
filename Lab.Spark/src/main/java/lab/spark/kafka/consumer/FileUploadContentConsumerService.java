@@ -45,6 +45,9 @@ public class FileUploadContentConsumerService {
 	@Value("${spark.stream.sink.wordcount.topic}")
 	private String sparkStreamingSinkWordCountTopic;
 
+	@Value("${spark.stream.sink.sentencecount.topic}")
+	private String sparkStreamingSinkSentenceCountTopic;
+	
 	//private StructType fileUploadContentSchema;
 
 	@PostConstruct
@@ -98,10 +101,11 @@ public class FileUploadContentConsumerService {
 						topicName,
 						openNLPConfig,
 						sparkStreamingSinkWordCountTopic,
+						sparkStreamingSinkSentenceCountTopic,
 						restTemplate,
 						kafkaServiceName);
 		
-		scheduledExecutorService.schedule(kafkaConsumerTask,60,TimeUnit.SECONDS);
+		scheduledExecutorService.schedule(kafkaConsumerTask,45,TimeUnit.SECONDS);
 		
 		logger.info("Finished scheduling Spark-Kafka Consumer for streaming from topic {} ",topicName);
 
@@ -115,7 +119,7 @@ public class FileUploadContentConsumerService {
 				"org.apache.kafka.common.serialization.StringDeserializer");
 		kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.StringDeserializer");
-		kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, topicName +"- SparkGroup");
+		kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, getClass().getName()+"-"+topicName);
 		// kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 		kafkaParams.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
 

@@ -2,7 +2,7 @@
 
 var src_Labels = [];
 var src_Data = [];
-var ctx = document.getElementById("top-word-count-bar-chart-horizontal");
+var ctx = document.getElementById("sentence-word-count-bar-chart-horizontal");
 var myChart = new Chart(ctx, {
 	type: 'horizontalBar',
 	data: {
@@ -49,7 +49,7 @@ var myChart = new Chart(ctx, {
 
 
 setInterval(function() {
-	$.getJSON('/chart/getTopWordCount', {
+	$.getJSON('/chart/getTotalSentenceAndWordCount', {
 	}, function(data) {
 		src_Labels = data.sLabel;
 		src_Data = data.sData;
