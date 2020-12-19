@@ -10,6 +10,12 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.streaming.Durations;
+import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +88,7 @@ public class FileUploadContentConsumerService {
 
 	public void startSparkKafkaStreaming() {
 
-		final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+		final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(10, new ThreadFactory() {
 
 			@Override
 			public Thread newThread(Runnable r) {
@@ -93,19 +99,45 @@ public class FileUploadContentConsumerService {
 				return t;				
 			}
 		});
+		
+		SparkConf sparkConfig1 = sparkConfigService.getSparkConfig("Word-Processing-App");
 				
+		SparkSession sparkSession1 = SparkSession.builder().config(sparkConfig1).getOrCreate();
+		SparkContext sparkContext1 = sparkSession1.sparkContext();
+		
+		JavaStreamingContext jssc1 = 
+				new JavaStreamingContext(JavaSparkContext.fromSparkContext(sparkContext1), Durations.seconds(30));
+		jssc1.checkpoint("./checkpoint/stream/jssc1");
+	
+		
 		String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
 		
-		KafkaConsumerTask kafkaConsumerTask = 
-				new KafkaConsumerTask(sparkConfigService,getKafkMapProperties(topicName),
+		WordCountConsumerTask wordCountConsumerTask = 
+				new WordCountConsumerTask(
+						sparkSession1,
+						jssc1,
+						getKafkMapProperties(topicName),
 						topicName,
 						openNLPConfig,
 						sparkStreamingSinkWordCountTopic,
+						restTemplate,
+						kafkaServiceName);
+		
+		scheduledExecutorService.schedule(wordCountConsumerTask,35,TimeUnit.SECONDS);
+		
+		SentenceCountConsumerTask sentenceCountConsumerTask = 
+				new SentenceCountConsumerTask(
+						sparkSession1,
+						jssc1,
+						getKafkMapProperties(topicName),
+						topicName,
+						openNLPConfig,
 						sparkStreamingSinkSentenceCountTopic,
 						restTemplate,
 						kafkaServiceName);
 		
-		scheduledExecutorService.schedule(kafkaConsumerTask,45,TimeUnit.SECONDS);
+		scheduledExecutorService.schedule(sentenceCountConsumerTask,35,TimeUnit.SECONDS);
+	
 		
 		logger.info("Finished scheduling Spark-Kafka Consumer for streaming from topic {} ",topicName);
 

@@ -2,43 +2,46 @@ package lab.spark.kafka.consumer;
 
 import java.util.Map;
 
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import lab.spark.config.OpenNLPConfigService;
-import lab.spark.config.SparkConfigService;
 
-public class KafkaConsumerTask implements Runnable {
+public class WordCountConsumerTask implements Runnable {
 
-	private Logger logger = LoggerFactory.getLogger(KafkaConsumerTask.class);
+	private Logger logger = LoggerFactory.getLogger(WordCountConsumerTask.class);
 	
-	private SparkConfigService sparkConfigService;
 	private  Map<String, Object> configMap;
 	
 	private String topicName;
 
 	private String sparkStreamingSinkTopicList;
-	private String sparkStreamingSinkSentenceCountTopic;
+	
 	private RestTemplate restTemplate;
 	private String kafkaServiceName;
 	
-	public KafkaConsumerTask(
-			SparkConfigService sparkConfigService,
+	private SparkSession sparkSession ;
+	private JavaStreamingContext jssc;
+	
+	public WordCountConsumerTask(
+			SparkSession sparkSession,
+			JavaStreamingContext jssc,
 			Map<String, Object> configMap, 
 			String topicName,
 			OpenNLPConfigService openNLPConfig,
 			String sparkStreamingSinkTopicList,
-			String sparkStreamingSinkSentenceCountTopic,
-			RestTemplate restTemplate,
+	   	    RestTemplate restTemplate,
 			String kafkaServiceName) {
 		
-		this.sparkConfigService = sparkConfigService;
+		this.sparkSession = sparkSession;
+		this.jssc = jssc;
 		this.configMap = configMap;
 		this.topicName = topicName;
 		this.sparkStreamingSinkTopicList = sparkStreamingSinkTopicList;
-		this.sparkStreamingSinkSentenceCountTopic = sparkStreamingSinkSentenceCountTopic;
 		this.restTemplate = restTemplate;
 		this.kafkaServiceName = kafkaServiceName;
 		
@@ -58,15 +61,9 @@ public class KafkaConsumerTask implements Runnable {
 					new WordCountKafkaStreamConsumer();
 			
 			fileUploadConsumerTestTask.processFileUpload(
-					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()), 
+					sparkSession,jssc, 
 					configMap, topicName,sparkStreamingSinkTopicList);
-			
-			SentenceCountKafkaStreamConsumer sentenceCountKafkaStreamConsumer =
-					new SentenceCountKafkaStreamConsumer();
-			
-			sentenceCountKafkaStreamConsumer.processFileUpload(
-					sparkConfigService.getSparkConfig(FileUploadContentConsumerService.class.getName()), 
-					configMap, topicName, sparkStreamingSinkSentenceCountTopic);
+		
 			
 		} catch (Exception e) {
 			logger.warn("", e);

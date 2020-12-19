@@ -6,10 +6,8 @@ import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.Dataset;
@@ -19,7 +17,6 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
@@ -61,26 +58,25 @@ public class WordCountKafkaStreamConsumer extends CommonSparkConsumerConfig impl
 					});
 	
 	public void processFileUpload(
-			SparkConf sparkConfig, 
+			SparkSession sparkSession , 
+			JavaStreamingContext jssc,
 			Map<String, Object> configMap, 
 			String topicName,
 			String sparkStreamingSinkWordTopicList)throws InterruptedException {
 		
 		configConsumerGroupName(configMap, CONSUMER_GROUP_NAME);
 		
-		final String kafkaServerList = (String) configMap.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG);
+		final String kafkaServerList = getKafkaServerList(configMap);
 		
-		SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
-		
-		JavaStreamingContext jssc = 
-				new JavaStreamingContext(JavaSparkContext.fromSparkContext(sparkSession.sparkContext()), Durations.seconds(30));
-		jssc.checkpoint("./checkpoint/stream/wordcount");
 		
 		// Start reading messages from Kafka and get DStream
-		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
+		final JavaInputDStream<ConsumerRecord<String, String>> stream = 
+				KafkaUtils.createDirectStream(
+				jssc,
 				LocationStrategies.PreferConsistent(),
-				ConsumerStrategies.<String, String>Subscribe(Arrays.asList(topicName), configMap));
-
+				ConsumerStrategies.<String, String>Subscribe(Arrays.asList(topicName), 
+				configMap));
+		
 		// Read value of each message from Kafka and return it
 		JavaDStream<FileUploadContentDTO> fileUploadContentDTODStream = stream.map(new TextFileUploadProcessingFunction());
 
@@ -104,8 +100,8 @@ public class WordCountKafkaStreamConsumer extends CommonSparkConsumerConfig impl
 
 				JavaRDD<WordsPerSentenceDTO> wordsPerJavaRDD = rdd.mapPartitions(new WordPerSentenceExtractionFunction());
 
-				CassandraJavaUtil.javaFunctions(wordsPerJavaRDD)
-						.writerBuilder("lab", "sentencewords", sentenceWordsWriterFactory).saveToCassandra();
+//				CassandraJavaUtil.javaFunctions(wordsPerJavaRDD)
+//						.writerBuilder("lab", "sentencewords", sentenceWordsWriterFactory).saveToCassandra();
 
 				logger.info("Finished persisting RDD to cassandra");
 				
@@ -140,15 +136,6 @@ public class WordCountKafkaStreamConsumer extends CommonSparkConsumerConfig impl
 				  .save();
 			}
 		});
-
-
-
-		try {
-			jssc.start();
-			jssc.awaitTermination();
-		} catch (InterruptedException e) {
-			logger.error("", e);
-		}
 
 	}
 	

@@ -18,6 +18,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.streaming.Durations;
+import org.apache.spark.streaming.StreamingContext;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
@@ -48,26 +49,21 @@ public class SentenceCountKafkaStreamConsumer extends CommonSparkConsumerConfig 
 					});
 	
 	public void processFileUpload(
-			SparkConf sparkConfig, 
+			SparkSession sparkSession , 
+			JavaStreamingContext jssc,
 			Map<String, Object> configMap, 
 			String topicName,
 			String sparkStreamingSinkTopicList)throws InterruptedException {
 		
 		configConsumerGroupName(configMap, CONSUMER_GROUP_NAME);
 		
-		final String kafkaServerList = (String) configMap.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG);
-		
-		SparkSession sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
-		
-		JavaStreamingContext jssc = 
-				new JavaStreamingContext(JavaSparkContext.fromSparkContext(sparkSession.sparkContext()), Durations.seconds(30));
-		jssc.checkpoint("./checkpoint/stream/sentencecount");
+		final String kafkaServerList = getKafkaServerList(configMap);
 		
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
 				LocationStrategies.PreferConsistent(),
 				ConsumerStrategies.<String, String>Subscribe(Arrays.asList(topicName), configMap));
-
+		
 		// Read value of each message from Kafka and return it
 		JavaDStream<FileUploadContentDTO> fileUploadContentDTODStream = stream.map(new TextFileUploadProcessingFunction());
 
@@ -88,19 +84,26 @@ public class SentenceCountKafkaStreamConsumer extends CommonSparkConsumerConfig 
 			});
 			
 			// Create Spark Session
-            SparkSession session = SparkSession.builder().config(sparkConfig).getOrCreate();
-            Dataset<Row> dataset = session.createDataFrame(totalSentencesPerFile, schema);
+            Dataset<Row> dataset = sparkSession.createDataFrame(totalSentencesPerFile, schema);
             
             dataset.createOrReplaceTempView("table");
 			Dataset<Row> topTotalSentencesPerFile = sparkSession.sql("select fileName, totalSentences from table order by totalSentences desc limit 20");
 		
 			topTotalSentencesPerFile.selectExpr("CAST(fileName AS STRING) AS key", "CAST(totalSentences AS STRING) AS value")
-			  .writeStream()
+			  .write()
 			  .format("kafka")
 			  .option("kafka.bootstrap.servers", kafkaServerList)
 			  .option("topic", sparkStreamingSinkTopicList)
-			  .start();
+			  .save();
 		
 		});
+	
+		
+		try {
+			jssc.start();
+			jssc.awaitTermination();
+		} catch (InterruptedException e) {
+			logger.error("", e);
+		}
 	}
 }

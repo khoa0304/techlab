@@ -126,7 +126,7 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 		try {
 		
 			while(true) {
-				System.out.println("test");
+				System.out.println("WordCountTopic");
 				TimeUnit.SECONDS.sleep(20);
 			}
 		} finally {
@@ -137,4 +137,35 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 			
 		}
 	}
+	
+	@Test(enabled=true)
+	public void testSentenceCountTopic() throws InterruptedException, ExecutionException {
+
+		String kafkaServerList = kafkaConfig.getKafkaServerList();
+	
+		
+		KafkaEventConsumer kafkaEventConsumer = new KafkaEventConsumer();
+		kafkaEventConsumer.createConsumer(kafkaServerList,"SentenceCountTopic", "SentenceCountTopic");
+		
+		ExecutorService scheduledExecutor = Executors.newSingleThreadExecutor();
+		scheduledExecutor.submit(kafkaEventConsumer);
+		
+		
+		try {
+		
+			while(true) {
+				System.out.println("SentenceCountTopic");
+				TimeUnit.SECONDS.sleep(20);
+			}
+		} finally {
+			
+			kafkaEventConsumer.stopped();
+			scheduledExecutor.shutdown();
+		
+			
+		}
+	}
+	
+	
+	
 }
