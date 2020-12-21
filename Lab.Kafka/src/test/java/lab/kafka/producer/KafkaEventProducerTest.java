@@ -1,5 +1,6 @@
 package lab.kafka.producer;
 
+import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -110,62 +111,37 @@ public class KafkaEventProducerTest extends AbstractTestNGSpringContextTests {
 	}
 	
 	
-	@Test(enabled=false)
+	@Test(enabled=true)
 	public void testConsumerWordCount() throws InterruptedException, ExecutionException {
 
 		String kafkaServerList = kafkaConfig.getKafkaServerList();
 	
+		ExecutorService scheduledExecutor = Executors.newFixedThreadPool(2);
 		
-		KafkaEventConsumer kafkaEventConsumer = new KafkaEventConsumer();
-		kafkaEventConsumer.createConsumer(kafkaServerList,"WordCountTopic", "WordCountTopic");
+		KafkaEventConsumer wordCountTopicConsumer = new KafkaEventConsumer();
+		wordCountTopicConsumer.createConsumer(kafkaServerList,"WordCountTopic", "WordCountTopic");
 		
-		ExecutorService scheduledExecutor = Executors.newSingleThreadExecutor();
-		scheduledExecutor.submit(kafkaEventConsumer);
+		scheduledExecutor.submit(wordCountTopicConsumer);
 		
+		
+		KafkaEventConsumer sentenceCountTopicConsumer = new KafkaEventConsumer();
+		sentenceCountTopicConsumer.createConsumer(kafkaServerList,"SentenceCountTopic", "SentenceCountTopic");
+		scheduledExecutor.submit(sentenceCountTopicConsumer);
 		
 		try {
 		
 			while(true) {
-				System.out.println("WordCountTopic");
+				System.out.println(new Timestamp(System.currentTimeMillis())+ " - Kafka Test Consumer");
 				TimeUnit.SECONDS.sleep(20);
 			}
 		} finally {
 			
-			kafkaEventConsumer.stopped();
+			wordCountTopicConsumer.stopped();
+			sentenceCountTopicConsumer.stopped();
 			scheduledExecutor.shutdown();
 		
 			
 		}
 	}
-	
-	@Test(enabled=false)
-	public void testSentenceCountTopic() throws InterruptedException, ExecutionException {
-
-		String kafkaServerList = kafkaConfig.getKafkaServerList();
-	
-		
-		KafkaEventConsumer kafkaEventConsumer = new KafkaEventConsumer();
-		kafkaEventConsumer.createConsumer(kafkaServerList,"SentenceCountTopic", "SentenceCountTopic");
-		
-		ExecutorService scheduledExecutor = Executors.newSingleThreadExecutor();
-		scheduledExecutor.submit(kafkaEventConsumer);
-		
-		
-		try {
-		
-			while(true) {
-				System.out.println("SentenceCountTopic");
-				TimeUnit.SECONDS.sleep(20);
-			}
-		} finally {
-			
-			kafkaEventConsumer.stopped();
-			scheduledExecutor.shutdown();
-		
-			
-		}
-	}
-	
-	
 	
 }

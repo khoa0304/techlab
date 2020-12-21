@@ -1,4 +1,4 @@
-package lab.spark.kafka.consumer;
+package lab.spark.kafka.consumer.listener;
 
 
 import org.apache.spark.streaming.scheduler.BatchInfo;

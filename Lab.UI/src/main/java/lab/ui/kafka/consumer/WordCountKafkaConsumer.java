@@ -10,7 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lab.ui.model.WordAndCount;
+import lab.ui.model.LabelAndCount;
 
 public class WordCountKafkaConsumer extends CommonKafkaConsumerConfig implements Callable<Void>{
 	
@@ -18,7 +18,7 @@ public class WordCountKafkaConsumer extends CommonKafkaConsumerConfig implements
 
 	private volatile boolean isStopped = false;
 	
-	private WordAndCount wordAndCount = new WordAndCount(new String[0], new long[0]);
+	private LabelAndCount labelAndCount = new LabelAndCount(new String[0], new long[0]);
 	
 	@Override
 	public Void call() throws Exception {
@@ -27,25 +27,25 @@ public class WordCountKafkaConsumer extends CommonKafkaConsumerConfig implements
 	
 			ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(3));
 			
-			List<String> wordList = new ArrayList<>();
-			List<Long> wordCountList = new ArrayList<>();
+			List<String> wordLabels = new ArrayList<>();
+			List<Long> wordCount = new ArrayList<>();
 			for (ConsumerRecord<String, String> record : records) {
 			
 				logger.debug("received - offset = {}, key = {}, value = {}", record.offset(), record.key(), record.value());
-				wordList.add(record.key());
-				wordCountList.add(Long.valueOf(record.value()));
+				wordLabels.add(record.key());
+				wordCount.add(Long.valueOf(record.value()));
 			}
 			
-			if(wordList.size() > 0 && wordCountList.size() > 0 && wordList.size() == wordCountList.size()) {
+			if(wordLabels.size() > 0 && wordCount.size() > 0 && wordLabels.size() == wordCount.size()) {
 				
-				wordAndCount.setsLabel(wordList.toArray(new String[wordList.size()]));
+				labelAndCount.setsLabel(wordLabels.toArray(new String[wordLabels.size()]));
 				
-				long[] wordCountArray = new long[wordCountList.size()];
+				long[] wordCountArray = new long[wordCount.size()];
 				int i = 0;
-				for(Long count : wordCountList) {
+				for(Long count : wordCount) {
 					wordCountArray[i++] = count;
 				}
-				wordAndCount.setsData(wordCountArray);	
+				labelAndCount.setsData(wordCountArray);	
 			}
 			
 		}
@@ -58,7 +58,7 @@ public class WordCountKafkaConsumer extends CommonKafkaConsumerConfig implements
 		this.isStopped = true;
 	}
 	
-	public WordAndCount getWordAndCount() {
-		return this.wordAndCount;
+	public LabelAndCount getWordAndCount() {
+		return this.labelAndCount;
 	}
 }

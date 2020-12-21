@@ -1,15 +1,15 @@
 "use strict";
 
-var src_Labels = [];
-var src_Data = [];
-var ctx = document.getElementById("sentence-word-count-bar-chart-horizontal");
-var myChart = new Chart(ctx, {
+var src_Labels_chart_3 = [];
+var src_Data_chart_3 = [];
+var ctx_chart_3 = document.getElementById("sentence-word-count-bar-chart-horizontal");
+var myChart_chart_3 = new Chart(ctx_chart_3, {
 	type: 'horizontalBar',
 	data: {
-		labels: src_Labels,
+		labels: src_Labels_chart_3,
 		datasets: [{
-				label: 'Word Count',
-				data: src_Data,
+				label: 'Sentence Count',
+				data: src_Data_chart_3,
 				backgroundColor: poolColors(100),
 		        borderColor:  poolColors(100),
 			    borderWidth: 1
@@ -51,12 +51,12 @@ var myChart = new Chart(ctx, {
 setInterval(function() {
 	$.getJSON('/chart/getTotalSentenceAndWordCount', {
 	}, function(data) {
-		src_Labels = data.sLabel;
-		src_Data = data.sData;
+		src_Labels_chart_3 = data.sLabel;
+		src_Data_chart_3 = data.sData;
 	});
-	myChart.data.labels = src_Labels;
-	myChart.data.datasets[0].data = src_Data;
-	myChart.update();
+	myChart_chart_3.data.labels = src_Labels_chart_3;
+	myChart_chart_3.data.datasets[0].data = src_Data_chart_3;
+	myChart_chart_3.update();
 }, 1000);
 
 function dynamicColors() {

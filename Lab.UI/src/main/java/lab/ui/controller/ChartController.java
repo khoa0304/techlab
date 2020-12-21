@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 
 import lab.ui.kafka.consumer.SentenceAndTotalWordCountKafkaConsumer;
 import lab.ui.kafka.consumer.WordCountKafkaConsumer;
-import lab.ui.model.WordAndCount;
+import lab.ui.model.LabelAndCount;
 import lab.ui.model.WordsPerSentenceDTO;
 
 @Controller
@@ -35,29 +35,29 @@ public class ChartController {
 	@Value("${spark.stream.sink.sentencecount.topic}")
 	private String sparkStreamingSinkSentenceCountTopic;
 	
-	
-	private WordCountKafkaConsumer kafkaEventConsumer;
+	private WordCountKafkaConsumer wordCountKafkaConsumer;
 	private SentenceAndTotalWordCountKafkaConsumer sentenceAndTotalWordCountKafkaConsumer;
 	
 	@PostConstruct
 	public void startExecutorService() {
 		
-	    kafkaEventConsumer = new WordCountKafkaConsumer();
-		kafkaEventConsumer.createStringKeyValueConsumer(kafkaServerList,sparkStreamingSinkWordCountTopic, "UI-WordCount-Consumer-Group");
+	    wordCountKafkaConsumer = new WordCountKafkaConsumer();
+		wordCountKafkaConsumer.createStringKeyValueConsumer(kafkaServerList,sparkStreamingSinkWordCountTopic, "UI-WordCount-Consumer-Group");
 		
 		sentenceAndTotalWordCountKafkaConsumer = new SentenceAndTotalWordCountKafkaConsumer();
 		sentenceAndTotalWordCountKafkaConsumer.createStringKeyValueConsumer(kafkaServerList, sparkStreamingSinkSentenceCountTopic, "UI-SentenceCount-Consumer-Group");
 		
 		ExecutorService scheduledExecutor = Executors.newFixedThreadPool(2);
-		scheduledExecutor.submit(kafkaEventConsumer);
+		scheduledExecutor.submit(wordCountKafkaConsumer);
 		scheduledExecutor.submit(sentenceAndTotalWordCountKafkaConsumer);
 		
 	}
 	
-    @GetMapping
-    public String main() {
-        return "index";
-    }
+	@GetMapping("/ping")
+	@ResponseBody
+	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Hello UI Service") String name) {
+		return "UI Chart Controller Service responds " + name;
+	}	
     
     @GetMapping({"/chart1"})
     public String chart1(Model model) {
@@ -69,22 +69,11 @@ public class ChartController {
     public String chart2(Model model) {
     	return "SentenceWordCount";
     }
-    
-    @PostMapping({"/updateData"})
-    public String updateData(@RequestBody WordsPerSentenceDTO wordsPerSentenceDTO) {
-    	return "chart2";
-    }
-    
-	
-	@GetMapping("/ping")
-	@ResponseBody
-	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Hello UI Service") String name) {
-		return "UI Chart Controller Service responds " + name;
-	}	
-  
+
+
     @GetMapping({"/getTopWordCount"})
     public  @ResponseBody String getTopWordCount(Model model) {
-    	WordAndCount wordAndCount = kafkaEventConsumer.getWordAndCount();
+    	LabelAndCount wordAndCount = wordCountKafkaConsumer.getWordAndCount();
     	String json = new Gson().toJson(wordAndCount);
     	
         return json;
@@ -92,7 +81,7 @@ public class ChartController {
     
     @GetMapping({"/getTotalSentenceAndWordCount"})
     public  @ResponseBody String getTotalSentenceAndWordCount(Model model) {
-    	WordAndCount wordAndCount = kafkaEventConsumer.getWordAndCount();
+    	LabelAndCount wordAndCount = sentenceAndTotalWordCountKafkaConsumer.getWordAndCount();
     	String json = new Gson().toJson(wordAndCount);
     	
         return json;

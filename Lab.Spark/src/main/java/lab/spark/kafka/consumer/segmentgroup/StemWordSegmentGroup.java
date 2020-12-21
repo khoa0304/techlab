@@ -1,10 +1,9 @@
-package lab.spark.kafka.consumer;
+package lab.spark.kafka.consumer.segmentgroup;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -14,9 +13,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
@@ -26,12 +22,11 @@ import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.spark.connector.japi.CassandraJavaUtil;
-
 import lab.spark.cassandra.dao.SentenceWordsWriter.SentenceWordsWriterFactory;
 import lab.spark.dto.FileUploadContentDTO;
 import lab.spark.dto.SentencesDTO;
 import lab.spark.dto.WordsPerSentenceDTO;
+import lab.spark.kafka.consumer.CommonSparkConsumerConfig;
 import lab.spark.kafka.consumer.function.PairWordFunction;
 import lab.spark.kafka.consumer.function.SentenceExtractionFunction;
 import lab.spark.kafka.consumer.function.StemFunction;
@@ -40,34 +35,27 @@ import lab.spark.kafka.consumer.function.WordExtractionFunction;
 import lab.spark.kafka.consumer.function.WordPerSentenceExtractionArrayFunction;
 import lab.spark.kafka.consumer.function.WordPerSentenceExtractionFunction;
 
-public class WordCountKafkaStreamConsumer extends CommonSparkConsumerConfig implements Serializable {
+public class StemWordSegmentGroup extends CommonSparkConsumerConfig 
+						implements Serializable,SegmentGroup<WordsPerSentenceDTO[]> {
 
 	private static final long serialVersionUID = 1L;
 
-	private Logger logger = LoggerFactory.getLogger(WordCountKafkaStreamConsumer.class);
+	private Logger logger = LoggerFactory.getLogger(StemWordSegmentGroup.class);
 
 	private SentenceWordsWriterFactory sentenceWordsWriterFactory = new SentenceWordsWriterFactory();
 
 	public static final String CONSUMER_GROUP_NAME = "WORD-COUNT-CONSUMER-GROUP";
 	
-	final StructType schema = DataTypes.createStructType(
-			new StructField[] { 
-					DataTypes.createStructField("word", DataTypes.StringType, true),
-					DataTypes.createStructField("count", DataTypes.LongType, true)
-//					DataTypes.createStructField("wordarray", DataTypes.createArrayType(DataTypes.StringType), true)});
-					});
-	
-	public void processFileUpload(
+
+	public JavaDStream<WordsPerSentenceDTO[]> streamTextContent(
 			SparkSession sparkSession , 
 			JavaStreamingContext jssc,
-			Map<String, Object> configMap, 
+			String kafkaServerList,
 			String topicName,
-			String sparkStreamingSinkWordTopicList)throws InterruptedException {
+			String sparkStreamingSinkWordTopicList){
 		
-		configConsumerGroupName(configMap, CONSUMER_GROUP_NAME);
-		
-		final String kafkaServerList = getKafkaServerList(configMap);
-		
+		Map<String, Object> configMap = 
+				configConsumerGroupName(kafkaServerList, CONSUMER_GROUP_NAME);
 		
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = 
@@ -85,11 +73,6 @@ public class WordCountKafkaStreamConsumer extends CommonSparkConsumerConfig impl
 		JavaDStream<WordsPerSentenceDTO[]> wordsDStream = sentencesDStream.map(new WordPerSentenceExtractionArrayFunction());
 
 		JavaDStream<WordsPerSentenceDTO[]> stemsDStream = wordsDStream.map(new StemFunction());
-
-
-	
-		// final SparkSession sparkSession =
-		// SparkSession.builder().config(sparkConfig).getOrCreate();
 
 		stemsDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO[]>>() {
 
@@ -126,7 +109,7 @@ public class WordCountKafkaStreamConsumer extends CommonSparkConsumerConfig impl
 				dataset.createOrReplaceTempView("table");
 				Dataset<Row> topWordsCount = sparkSession.sql("select word, count from table order by count desc limit 20");
 				
-				//dataset.write().format("console").save();
+				dataset.write().format("console").save();
 				
 				topWordsCount.selectExpr("CAST(word AS STRING) AS key", "CAST(count AS STRING) AS value")
 				  .write()
@@ -136,43 +119,8 @@ public class WordCountKafkaStreamConsumer extends CommonSparkConsumerConfig impl
 				  .save();
 			}
 		});
-
+		
+		return stemsDStream;
 	}
-	
-	
-	
-	
-//	private void sendDataSetToDashboard(
-//			Dataset<Row> dataset) {
-//		
-//		String commaSeparatedWords = 
-//				dataset.select("word").
-//				collectAsList().stream().
-//				map(new java.util.function.Function<Row, String>() {
-//
-//					@Override
-//					public String apply(Row row) {
-//						
-//						return row.getString(0);
-//					}
-//				}).
-//	collect(Collectors.joining(","));
-//
-//
-//String commaSeparatedCounts  = 
-//	dataset.select("count").
-//	collectAsList().stream().
-//	map(new java.util.function.Function<Row, String>() {
-//
-//		@Override
-//		public String apply(Row row) {
-//			
-//			return String.valueOf(row.getInt(0));
-//		}
-//	}).
-//	collect(Collectors.joining(","));
-//
-//logger.info("Labels: {} - Count {} ", commaSeparatedWords,commaSeparatedCounts);
-//		
-//}
+
 }
