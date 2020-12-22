@@ -65,31 +65,51 @@
 
 	});
 </script>
+<style>
+
+.dropzone .dz-preview .dz-image {
+  width: 100px;
+  height:100px;
+}
+
+</style>
 </head>
 <body>
 
 	<div class="ui-layout-center" id="inner">
 		<div class="ui-layout-center">
 
-		<div class="container">
+			<table>
+				<tr>
+					<td>
+						<button id="streamingButton" onclick="myFunction()">Start
+							Streaming</button>
 
-			<div style="float: left; margin: 10px">
-				<div id="wrapper" class="chart-container"
-					style="position: relative; height: 25vh; width: 40vw">
-					<canvas id="top-word-count-bar-chart-horizontal"></canvas>
-				</div>
-			</div>
+						
+					</td>
+					<td>
+					<p id="demo"></p>
+					</td>
+				</tr>
+				<tr>
+					<td>
 
-			<div style="float: right; margin: 10px">
+						<div id="wrapper" class="chart-container"
+							style="position: left; height: 25vh; width: 40vw">
+							<canvas id="top-word-count-bar-chart-horizontal"></canvas>
+						</div>
 
-				<div id="wrapper" class="chart-container"
-					style="position: relative; height: 15vh; width: 40vw">
-					<canvas id="sentence-word-count-bar-chart-horizontal"></canvas>
-				</div>
-			</div>
+					</td>
+					<td>
 
+						<div id="wrapper" class="chart-container"
+							style="position: right; height: 25vh; width: 40vw">
+							<canvas id="sentence-word-count-bar-chart-horizontal"></canvas>
+						</div>
 
-		</div>
+					</td>
+				</tr>
+			</table>
 
 		</div>
 		<div class="ui-layout-south">
@@ -118,54 +138,53 @@
 				</div>
 			</nav>
 		</div>
-	</div>
-	<div class="ui-layout-north">
 
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-8 mt-5">
-					<div class="ui-widget" id="menu-container">
+		<div class="ui-layout-north">
 
-						<input type="text" id="searchBox"
-							style="height: 23px; width: 549px"> <label for="search">
-							Search: </label>
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-8 mt-5">
+						<div class="ui-widget" id="menu-container">
 
+							<table>
+								<tr>
+									<td><input type="text" id="searchBox"
+										style="height: 50px; width: 800px"></td>
+									<td><label for="search">Search </label></td>
+								</tr>
+							</table>
+
+						</div>
 					</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="ui-layout-west">
+
+			<div class="container">
+
+				<div th:if="${message}">
+					<h2 th:text="${message}" />
+				</div>
+
+				<div id="dropzone">
+					<form action="/uploadFile" class="dropzone needsclick"
+						id="uploadFile" style="width: 150px;">
+
+						<div class="dz-message needsclick"
+							style="width: 100px; height: 500px">
+							<button type="button" class="dz-button">Drop files here
+								or click to upload.</button>
+							<br />
+						</div>
+
+					</form>
 				</div>
 			</div>
 		</div>
 
 	</div>
-	<div class="ui-layout-west">
-
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-8 mt-5">
-
-					<div th:if="${message}">
-						<h2 th:text="${message}" />
-					</div>
-
-					<div id="dropzone">
-						<form action="/uploadFile" class="dropzone needsclick"
-							id="uploadFile" style="width: 150px;">
-
-							<div class="dz-message needsclick"
-								style="width: 100px; height: 1000px">
-								<button type="button" class="dz-button">
-								Drop files here or click to upload.</button>
-								<br />
-							</div>
-
-						</form>
-					</div>
-
-				</div>
-			</div>
-		</div>
-	</div>
-
-
 
 	<script th:src="@{/js/chart/chart2.js}"></script>
 	<script th:src="@{/js/chart/chart3.js}"></script>
@@ -196,6 +215,28 @@
 			}
 
 		});
+
+		function myFunction() {
+		
+			$.post("/streaming/startstop", function(data) {
+				//As soon as the browser finished downloading, this function is called.
+				$('#demo').html(data);
+				
+				var buttontext = document.getElementById("streamingButton").innerHTML;
+				if (buttontext === 'Start Streaming')
+					document.getElementById("streamingButton").innerHTML = "Stop Streaming";
+				else{
+					document.getElementById("streamingButton").innerHTML = "Start Streaming";
+				}
+			});
+
+			var buttontext = document.getElementById("streamingButton").innerHTML;
+			if (buttontext === 'Start Streaming')
+				document.getElementById("streamingButton").innerHTML = "Stop Streaming In Progress";
+			else{
+				document.getElementById("streamingButton").innerHTML = "Start Streaming In Progress";
+			}
+		}
 	</script>
 </body>
 </html>

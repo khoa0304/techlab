@@ -1,0 +1,179 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>Lab</title>
+
+<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+<script th:src="@{/js/jquery/jquery-3.5.0.js}"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+<link th:rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.min.css} " />
+<link th:rel="stylesheet" th:href="@{/css/dropzone/dropzone.css}" />
+<link th:rel="stylesheet" th:href="@{/css/toastr/toastr.min.css}" />
+
+
+<script>
+	$(function() {
+		$("#searchBox")
+				.autocomplete(
+						{
+							source : function(request, response) {
+								$
+										.ajax({
+											url : "http://12.8.0.2:11515/search/getTags?querytext="
+													+ request.term + "",
+											dataType : "json",
+											minLength : 2,
+											data : {
+												q : request.term
+											},
+											success : function(data) {
+
+												response($.map(data, function(
+														item) {
+													return {
+														label : item.tagName,
+														value : item.tagName
+													};
+												}));
+											},
+
+											error : function(data) {
+												console.log('search error');
+											}
+										});
+							},
+
+							select : function(event, ui) {
+								$("#result").html(ui.item.value).show();
+							}
+
+						})
+
+	});
+</script>
+</head>
+<body>
+
+	<!-- Navigation -->
+	<nav class="navbar navbar-expand-lg navbar-light bg-primary static-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">Lab- Dropzone</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse"
+				data-target="#navbarResponsive" aria-controls="navbarResponsive"
+				aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarResponsive">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item active"><a class="nav-link" href="#">Home
+							<span class="sr-only">(current)</span>
+					</a></li>
+					<li class="nav-item"><a class="nav-link" href="#">About</a></li>
+					<li class="nav-item"><a class="nav-link" href="#">Services</a>
+					</li>
+					<li class="nav-item"><a class="nav-link" href="#">Contact</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<section>
+
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-8 mt-5">
+
+					<div th:if="${message}">
+						<h2 th:text="${message}" />
+					</div>
+
+					<div id="dropzone">
+						<form action="/uploadFile" class="dropzone needsclick"
+							id="uploadFile" style="width: 548px;">
+
+							<div class="dz-message needsclick"
+								style="width: 551px; height: 10px">
+								<button type="button" class="dz-button">Drop files here
+									or click to upload.</button>
+								<br />
+							</div>
+
+						</form>
+					</div>
+
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-8 mt-5">
+					<div class="ui-widget" id="menu-container" style="width: 845px;">
+	
+						<input type="text" id="searchBox"
+							style="height: 23px; width: 549px">
+						<label for="search">
+							Search: </label>
+	
+					</div>
+				</div>
+			</div>
+		
+	   </div>
+	</section>
+
+	<section>
+		
+
+		<div style="float:left;  margin:10px">
+			<div id="wrapper" class="chart-container"
+				style="position: relative; height: 20vh; width: 40vw">
+				<canvas id="top-word-count-bar-chart-horizontal"></canvas>
+			</div>
+		</div>
+
+		<div style="float:right; margin:10px">
+
+			<div id="wrapper" class="chart-container"
+				style="position: relative; height: 20vh; width: 40vw">
+				<canvas id="sentence-word-count-bar-chart-horizontal"></canvas>
+			</div>
+		</div>
+
+
+	</section>
+
+
+
+	<script th:src="@{/js/chart/chart2.js}"></script>
+	<script th:src="@{/js/chart/chart3.js}"></script>
+
+	<script th:src="@{/js/popper/popper.min.js}"></script>
+	<script th:src="@{/js/bootstrap/bootstrap.min.js}"></script>
+	<script th:src="@{/js/dropzone/dropzone.js}"></script>
+	<script th:src="@{/js/toastr/toastr.min.js}"></script>
+
+	<script type="text/javascript">
+		Dropzone.autoDiscover = false;
+
+		$("#uploadFile").dropzone({
+
+			maxFilesize : 4096,//MB
+			timeout : 7200000,//milisecond - 2 hours
+			acceptedFiles : ".jpeg,.jpg,.png,.gif,.pdf,.txt,.csv",
+
+			success : function(file, response) {
+				toastr.success('File ' + file.name + ' uploaded successfully');
+			}
+
+		});
+	</script>
+
+
+
+</body>
+</html>
