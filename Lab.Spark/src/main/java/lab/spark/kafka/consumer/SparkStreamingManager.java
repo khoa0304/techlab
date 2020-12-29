@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import lab.spark.config.KafkaConfigService;
 import lab.spark.config.SparkConfigService;
 import lab.spark.kafka.consumer.segmentgroup.SegmentGroupFactory.SEGMENTGROUP;
+import lab.spark.kafka.producer.KafkaProducerForSpark;
 
 @Service
 public class SparkStreamingManager {
@@ -51,6 +53,9 @@ public class SparkStreamingManager {
 	@Value("${spark.stream.sink.sentencecount.topic}")
 	private String sparkStreamingSinkSentenceCountTopic;
 	
+	@Value("${spark.stream.sink.sentence.topic:sentenceTopic}")
+	private String sparkStreamingSinkSentenceTopic;
+	
 	private JavaStreamingContext javaStreamingContext;
 	private SparkSession sparkSession;
 	private SparkConf sparkConfig;
@@ -69,8 +74,9 @@ public class SparkStreamingManager {
 		
 		if( scheduledExecutorService != null && ! scheduledExecutorService.isTerminated()) return;
 		// add default SEGMENTGROUP and topic
-		kafkaTopicPersegmentGroup.put(SEGMENTGROUP.SENTENCE, sparkStreamingSinkSentenceCountTopic);
+		kafkaTopicPersegmentGroup.put(SEGMENTGROUP.SENTENCECOUNT, sparkStreamingSinkSentenceCountTopic);
 		kafkaTopicPersegmentGroup.put(SEGMENTGROUP.WORD, sparkStreamingSinkWordCountTopic);
+		kafkaTopicPersegmentGroup.put(SEGMENTGROUP.SENTENCE, sparkStreamingSinkSentenceTopic);
 		
 		createSparkStreamingContext();
 		startSparkKafkaStreaming(kafkaTopicPersegmentGroup);

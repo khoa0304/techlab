@@ -44,7 +44,8 @@ public class SparkConfigService {
 		SparkConf sparkConf = new SparkConf();
 		sparkConf.setAppName(className + ": " + simpleDateFormat.format(new Date()));
 		sparkConf
-				.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
+				//.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
+				.setMaster("local[*]")
 				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.local.ip",sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

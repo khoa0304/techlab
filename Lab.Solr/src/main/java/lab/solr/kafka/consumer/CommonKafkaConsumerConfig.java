@@ -1,4 +1,4 @@
-package lab.ui.kafka.consumer;
+package lab.solr.kafka.consumer;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -8,14 +8,16 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lab.common.file.dto.SentenceWordDto;
+
 public abstract class CommonKafkaConsumerConfig {
 	
 	private Logger logger = LoggerFactory.getLogger(CommonKafkaConsumerConfig.class); 
 	
-	protected KafkaConsumer<String, String> consumer;
+	protected KafkaConsumer<String, SentenceWordDto> consumer;
 	
 
-	public KafkaConsumer<String,String> createStringKeyValueConsumer(
+	public KafkaConsumer<String,SentenceWordDto> createStringKeyValueConsumer(
 			String brokerServerList, String topicName, String groupName) {
 
 		Properties props = new Properties();
@@ -25,14 +27,15 @@ public abstract class CommonKafkaConsumerConfig {
 		props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
 		props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "180000");
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+		//props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "lab.solr.kafka.serializer.SentenceWordDtoDeserializer");
 		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 		
-		consumer = new KafkaConsumer<String, String>(props);
+		consumer = new KafkaConsumer<String, SentenceWordDto>(props);
 
 		consumer.subscribe(Arrays.asList(topicName));
 		consumer.commitSync();
-		logger.info("Subscribed to topic " + topicName);
+		logger.info("Sorl Service Subscribed to topic " + topicName);
 	
 		return consumer;
 		

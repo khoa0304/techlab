@@ -5,9 +5,14 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
@@ -23,76 +28,128 @@ import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lab.common.file.dto.SentenceWordDto;
 import lab.spark.dto.FileUploadContentDTO;
 import lab.spark.dto.SentencesDTO;
+import lab.spark.dto.WordsPerSentenceDTO;
 import lab.spark.kafka.consumer.CommonSparkConsumerConfig;
 import lab.spark.kafka.consumer.function.SentenceExtractionFunction;
+import lab.spark.kafka.consumer.function.StemFunction;
 import lab.spark.kafka.consumer.function.TextFileUploadProcessingFunction;
+import lab.spark.kafka.consumer.function.WordPerSentenceExtractionArrayFunction;
+import lab.spark.kafka.consumer.function.WordPerSentenceExtractionFunction;
+import lab.spark.kafka.producer.KafkaProducerForSpark;
 
 public class SentenceSegmentGroup extends CommonSparkConsumerConfig 
-				implements Serializable,SegmentGroup<SentencesDTO> {
+						implements Serializable,SegmentGroup<WordsPerSentenceDTO> {
 
 	private static final long serialVersionUID = 1L;
 
-	private Logger logger = LoggerFactory.getLogger(SentenceSegmentGroup.class);
+	private Logger logger = LoggerFactory.getLogger(StemWordSegmentGroup.class);
 
-	public static final String CONSUMER_GROUP_NAME = "SENTENCE-COUNT-CONSUMER-GROUP";
+	public static final String CONSUMER_GROUP_NAME = "SENTENCE-CONSUMER-GROUP";
 	
 	final StructType schema = DataTypes.createStructType(
 			new StructField[] { 
 					DataTypes.createStructField("fileName", DataTypes.StringType, true),
-					DataTypes.createStructField("totalSentences", DataTypes.IntegerType, true)
-//					DataTypes.createStructField("wordarray", DataTypes.createArrayType(DataTypes.StringType), true)});
+					DataTypes.createStructField("sentence", DataTypes.StringType, true),
+					DataTypes.createStructField("words", DataTypes.createArrayType(DataTypes.StringType,true), true)
 					});
-	
-	public JavaDStream<SentencesDTO> streamTextContent(
+
+	public JavaDStream<WordsPerSentenceDTO> streamTextContent(
 			SparkSession sparkSession , 
 			JavaStreamingContext jssc,
 			String kafkaServerList,
 			String topicName,
-			String sparkStreamingSinkTopicList){
+			String sparkStreamingSinkTopicList,
+			Broadcast<KafkaProducerForSpark> kafkaProducerBroadcast){
 		
 		Map<String, Object> configMap = 
 				configConsumerGroupName(kafkaServerList, CONSUMER_GROUP_NAME);
 		
 		// Start reading messages from Kafka and get DStream
-		final JavaInputDStream<ConsumerRecord<String, String>> stream = KafkaUtils.createDirectStream(jssc,
+		final JavaInputDStream<ConsumerRecord<String, String>> stream = 
+				KafkaUtils.createDirectStream(
+				jssc,
 				LocationStrategies.PreferConsistent(),
-				ConsumerStrategies.<String, String>Subscribe(Arrays.asList(topicName), configMap));
+				ConsumerStrategies.<String, String>Subscribe(Arrays.asList(topicName), 
+				configMap));
 		
 		// Read value of each message from Kafka and return it
 		JavaDStream<FileUploadContentDTO> fileUploadContentDTODStream = stream.map(new TextFileUploadProcessingFunction());
 
 		JavaDStream<SentencesDTO> sentencesDStream = fileUploadContentDTODStream.map(new SentenceExtractionFunction());
-		
-		sentencesDStream.foreachRDD((JavaRDD<SentencesDTO> sentenceTextRDD) -> {
-			
-			JavaRDD<Row> totalSentencesPerFile = sentenceTextRDD.map(new Function<SentencesDTO, Row>() {
 
-				private static final long serialVersionUID = 1L;
+		JavaDStream<WordsPerSentenceDTO[]> wordsDStream = sentencesDStream.map(new WordPerSentenceExtractionArrayFunction());
 
-				@Override
-				public Row call(SentencesDTO sentencesDTO) throws Exception {
-					Row row = RowFactory.create(sentencesDTO.getFileName(),sentencesDTO.getSentences().length);
-					return row;
-				}
-			});
+		JavaDStream<WordsPerSentenceDTO[]> stemsDStream = wordsDStream.map(new StemFunction());
+		
+		JavaDStream<WordsPerSentenceDTO> wordCountsJavaPairDStream = 
+				stemsDStream.mapPartitions(new WordPerSentenceExtractionFunction());
+		
+		
+		
+		wordCountsJavaPairDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO>>() {
+
+			private static final long serialVersionUID = 1L;
 			
-			// Create Spark Session
-            Dataset<Row> dataset = sparkSession.createDataFrame(totalSentencesPerFile, schema);
-            
-            dataset.createOrReplaceTempView("table");
-			Dataset<Row> topTotalSentencesPerFile = sparkSession.sql("select fileName, totalSentences from table order by totalSentences desc limit 20");
-		
-			topTotalSentencesPerFile.selectExpr("CAST(fileName AS STRING) AS key", "CAST(totalSentences AS STRING) AS value")
-			  .write()
-			  .format("kafka")
-			  .option("kafka.bootstrap.servers", kafkaServerList)
-			  .option("topic", sparkStreamingSinkTopicList)
-			  .save();
-		
-		});
+			
+			@Override
+			public void call(JavaRDD<WordsPerSentenceDTO> rdd) throws Exception {
+				
+				//rdd.persist(StorageLevel.MEMORY_ONLY_2());
+						
+				JavaRDD<Row> totalSentencesPerFile = rdd.map(new Function<WordsPerSentenceDTO, Row>() {
+
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					public Row call(WordsPerSentenceDTO wordsPerSentenceDTO) throws Exception {
+						logger.info("WordsPerSentenceDTO {} ",wordsPerSentenceDTO);
+						Row row = RowFactory.create(
+								wordsPerSentenceDTO.getFileName(),
+								wordsPerSentenceDTO.getSentence(),
+								wordsPerSentenceDTO.getWords().toArray(new String[0]));
+						return row;
+					}
+				});
 	
-		return sentencesDStream;
+				Dataset<Row> dataset = 
+						sparkSession.createDataFrame(
+								totalSentencesPerFile.rdd(),
+								schema);
+			
+				dataset.createOrReplaceTempView("table");
+				Dataset<SentenceWordDto> selectedDataset = sparkSession.sql("select fileName,sentence, words from table ").as(Encoders.bean(SentenceWordDto.class));
+				
+				selectedDataset.foreach( new ForeachFunction<SentenceWordDto>() {
+				
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					public void call(SentenceWordDto row) throws Exception {
+						
+						String producerPayload = new ObjectMapper().writeValueAsString(row);
+						
+						KafkaProducerForSpark kafkaProducerForSpark = kafkaProducerBroadcast.getValue();
+						Producer<String, String> kafkaProducer = kafkaProducerForSpark.initKafkaProducer();
+						kafkaProducerForSpark.pushToKafka(kafkaProducer, sparkStreamingSinkTopicList, producerPayload); 
+					}
+				});
+			}
+		});
+		
+		return wordCountsJavaPairDStream;
 	}
+
+	@Override
+	public JavaDStream<WordsPerSentenceDTO> streamTextContent(SparkSession sparkSession,
+			JavaStreamingContext javaStreamingContext, String kafkaServerList, String topicName,
+			String sparkStreamingSinkTopicList) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -5,16 +5,18 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
+import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
@@ -34,6 +36,7 @@ import lab.spark.kafka.consumer.function.TextFileUploadProcessingFunction;
 import lab.spark.kafka.consumer.function.WordExtractionFunction;
 import lab.spark.kafka.consumer.function.WordPerSentenceExtractionArrayFunction;
 import lab.spark.kafka.consumer.function.WordPerSentenceExtractionFunction;
+import lab.spark.kafka.producer.KafkaProducerForSpark;
 
 public class StemWordSegmentGroup extends CommonSparkConsumerConfig 
 						implements Serializable,SegmentGroup<WordsPerSentenceDTO[]> {
@@ -73,37 +76,31 @@ public class StemWordSegmentGroup extends CommonSparkConsumerConfig
 		JavaDStream<WordsPerSentenceDTO[]> wordsDStream = sentencesDStream.map(new WordPerSentenceExtractionArrayFunction());
 
 		JavaDStream<WordsPerSentenceDTO[]> stemsDStream = wordsDStream.map(new StemFunction());
+		
+		JavaPairDStream<String, Integer> wordCountsJavaPairDStream = stemsDStream
+		.mapPartitions(new WordPerSentenceExtractionFunction())
+		.mapPartitions(new WordExtractionFunction())
+		.mapToPair(new PairWordFunction()).reduceByKey(new Function2<Integer, Integer, Integer>() {
+			
+			private static final long serialVersionUID = 1L;
 
-		stemsDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO[]>>() {
+			@Override
+			public Integer call(Integer i1, Integer i2) {
+				return i1 + i2;
+			}
+		});
+		
+		
+		wordCountsJavaPairDStream.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
 
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void call(JavaRDD<WordsPerSentenceDTO[]> rdd) throws Exception {
-
-				JavaRDD<WordsPerSentenceDTO> wordsPerJavaRDD = rdd.mapPartitions(new WordPerSentenceExtractionFunction());
-
-//				CassandraJavaUtil.javaFunctions(wordsPerJavaRDD)
-//						.writerBuilder("lab", "sentencewords", sentenceWordsWriterFactory).saveToCassandra();
-
-				logger.info("Finished persisting RDD to cassandra");
-				
-				JavaRDD<String> wordsRdd = wordsPerJavaRDD.mapPartitions(new WordExtractionFunction());
-				
-				JavaPairRDD<String, Integer> wordCountsPairRdd = 
-						wordsRdd.mapToPair(new PairWordFunction()).reduceByKey(new Function2<Integer, Integer, Integer>() {
-				
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public Integer call(Integer i1, Integer i2) {
-						return i1 + i2;
-					}
-				});
-		
+			public void call(JavaPairRDD<String, Integer> rdd) throws Exception {
+			
 				Dataset<Row> dataset = 
 						sparkSession.createDataset(
-								JavaPairRDD.toRDD(wordCountsPairRdd),
+								JavaPairRDD.toRDD(rdd),
 								Encoders.tuple(Encoders.STRING(),Encoders.INT())).toDF("word","count");
 						
 				dataset.createOrReplaceTempView("table");
@@ -121,6 +118,14 @@ public class StemWordSegmentGroup extends CommonSparkConsumerConfig
 		});
 		
 		return stemsDStream;
+	}
+
+
+	@Override
+	public JavaDStream<WordsPerSentenceDTO[]> streamTextContent(SparkSession sparkSession,
+			JavaStreamingContext javaStreamingContext, String kafkaServerList, String topicName,
+			String sparkStreamingSinkTopicList, Broadcast<KafkaProducerForSpark> kafkaProducerBroadcast) {
+		return this.streamTextContent(sparkSession, javaStreamingContext, kafkaServerList, topicName, sparkStreamingSinkTopicList);
 	}
 
 }

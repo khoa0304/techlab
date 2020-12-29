@@ -3,7 +3,7 @@ package lab.spark.kafka.consumer.segmentgroup;
 public class SegmentGroupFactory {
 
 	public enum SEGMENTGROUP{
-		WORD,SENTENCE
+		WORD,SENTENCECOUNT,SENTENCE
 	}
 	
 	public static SegmentGroup<?> createSegmentGroup(SEGMENTGROUP segmentGroup) {
@@ -14,9 +14,13 @@ public class SegmentGroupFactory {
 				StemWordSegmentGroup stemWordSegmentGroup = new StemWordSegmentGroup();
 				return stemWordSegmentGroup;
 				
+			case SENTENCECOUNT:
+				SentenceCountSegmentGroup sentenceCountSegmentGroup = new SentenceCountSegmentGroup();
+				return sentenceCountSegmentGroup;
+				
 			case SENTENCE:
-				SentenceSegmentGroup sentenceCountKafkaStreamConsumer = new SentenceSegmentGroup();
-				return sentenceCountKafkaStreamConsumer;
+				SentenceSegmentGroup sentenceSegmentGroup = new SentenceSegmentGroup();
+				return sentenceSegmentGroup;
 		}
 		return null;
 	}

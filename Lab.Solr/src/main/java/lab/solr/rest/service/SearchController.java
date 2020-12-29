@@ -2,6 +2,8 @@ package lab.solr.rest.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import lab.solr.kafka.consumer.DocumentAndSentenceKafka;
 import lab.solr.rest.pojo.SentenceAndStem;
 
 @Controller
@@ -36,12 +39,26 @@ public class SearchController {
 	@Value("${solr.collection.default}")
 	private String defaultCollection;
 	
-	private HttpSolrClient solr;
+	@Value("${spark.stream.sink.sentence.topic:sentenceTopic}")
+	private String sparkStreamingSinkSentenceTopic;
+	
+	@Value("${kafka.server.list}")
+	private String kafkaServerList;
+	
+	private HttpSolrClient httpSolrClient;
+	
+	private DocumentAndSentenceKafka documentAndSentenceKafka;
 	
 	@PostConstruct
 	public void initSolrClient() {
-		solr = new HttpSolrClient.Builder(solrServerEndpoint+defaultCollection).build();
-		solr.setParser(new XMLResponseParser());
+		httpSolrClient = new HttpSolrClient.Builder(solrServerEndpoint+defaultCollection).build();
+		httpSolrClient.setParser(new XMLResponseParser());
+	
+		documentAndSentenceKafka = new DocumentAndSentenceKafka(httpSolrClient);
+		documentAndSentenceKafka.createStringKeyValueConsumer(kafkaServerList, sparkStreamingSinkSentenceTopic, "Solr-DocumentSentence-Consumer-Group");
+		
+		ExecutorService scheduledExecutor = Executors.newFixedThreadPool(1);
+		scheduledExecutor.submit(documentAndSentenceKafka);
 	}
 	
 	@GetMapping("/ping")
@@ -73,8 +90,8 @@ public class SearchController {
 				list.add(solrInputDocument);
 			}
 		
-			solr.add(list);
-			solr.commit();
+			httpSolrClient.add(list);
+			httpSolrClient.commit();
 		   
 			return new ResponseEntity<HttpStatus>(HttpStatus.OK);
 			

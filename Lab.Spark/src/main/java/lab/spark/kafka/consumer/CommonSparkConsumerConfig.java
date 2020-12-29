@@ -21,7 +21,7 @@ public abstract class CommonSparkConsumerConfig implements Serializable {
 		kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.StringDeserializer");
 		kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
-		// kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+		kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 		kafkaParams.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
 
 		return kafkaParams;

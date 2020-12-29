@@ -24,6 +24,7 @@ public class StemFunction implements Serializable,Function<WordsPerSentenceDTO[]
 	
 	private final Set<String> PUNCTUATION_SET = NlpUtil.getPunctuationSet();
 	
+	private static final String ALPHA_NUMERIC_PATTERN = "^[a-zA-Z0-9]*$";
 	@Override
 	public WordsPerSentenceDTO[] call(WordsPerSentenceDTO[] wordsGroupBySentenceList) throws Exception {
 
@@ -47,6 +48,11 @@ public class StemFunction implements Serializable,Function<WordsPerSentenceDTO[]
 							PUNCTUATION_SET.contains(originalWord) ? "" : originalWord);
 					stems[index] = words.get(index);
 				}
+				
+				if( ! stem.matches(ALPHA_NUMERIC_PATTERN)) {
+					stems[index] = "" ;
+				}
+			
 				index++;
 			}
 			logger.info("Total Words {} - Total Stems {} ", words.size(), stems.length);

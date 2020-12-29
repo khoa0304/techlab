@@ -23,7 +23,7 @@ public class WordPerSentenceExtractionFunction implements Serializable,FlatMapFu
 		List<WordsPerSentenceDTO> list = new ArrayList<WordsPerSentenceDTO>();
 		while (t.hasNext()) {
 			WordsPerSentenceDTO[] wordsPerSentenceDTOs = t.next();
-			logger.info("Number of wordsPerSentenceDTOs ", wordsPerSentenceDTOs.length);
+			logger.debug("Number of wordsPerSentenceDTOs ", wordsPerSentenceDTOs.length);
 			list.addAll(Arrays.asList(wordsPerSentenceDTOs));
 		}
 		return list.iterator();
