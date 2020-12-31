@@ -2,6 +2,7 @@ package lab.spark.model;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,7 +78,7 @@ public class SparkOpenNlpProcessor implements Serializable {
 					for(Map.Entry<String,String[]> entry : wordsGroupedBySentence.entrySet()) {
 						
 						WordsPerSentenceDTO fileNameAndSentencesDto = 
-								new WordsPerSentenceDTO(mapFunc.getFileName(), entry.getKey(),Arrays.asList(entry.getValue()));
+								new WordsPerSentenceDTO(mapFunc.getFileName(), entry.getKey(),new HashSet<>(Arrays.asList(entry.getValue())));
 						fileNameAndWordsDTOs[index++]= fileNameAndSentencesDto;
 						
 					}
@@ -112,7 +113,7 @@ public class SparkOpenNlpProcessor implements Serializable {
 					
 						String[] words = wordsPerSentenceDTO.getWords().toArray(new String[0]);
 						String[] stems = broadcastSentenceDetector.getValue().lemmatatizer(dictionaryLemmatizer,posModel,words );						
-						wordsPerSentenceDTO.setWords(Arrays.asList(stems));
+						wordsPerSentenceDTO.setWords(new HashSet<>(Arrays.asList(stems)));
 					}
 					return wordsDatasetArray;
 				}

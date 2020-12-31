@@ -1,5 +1,6 @@
 package lab.solr.rest.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -7,8 +8,10 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.XMLResponseParser;
+import org.apache.solr.client.solrj.response.schema.SchemaResponse.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,40 +69,58 @@ public class SearchController {
 	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
 		return " Solr Search Service responds. Solr Endpoint " + solrServerEndpoint +" Default Collection " + defaultCollection;
 	}	
-	
+	  
+    @GetMapping(path = "/deleteall",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+   	@ResponseBody
+   	public String deleteAllDocuments() {
+    	
+    	try {
+    		
+    		org.apache.solr.client.solrj.response.UpdateResponse updateResponse = 
+    				httpSolrClient.deleteByQuery("*:*");
+			httpSolrClient.commit();
+    		
+    		return updateResponse.jsonStr();
+    		
+    	} catch (SolrServerException | IOException e) {
+			logger.error("Error Deleting all Documents {}",e);
+			return e.toString();
+		}          
+    }
     
     @PostMapping(path = "/sentence/index",consumes= MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public ResponseEntity<HttpStatus> indexSentence(@RequestBody SentenceAndStem sentenceAndWordStem) {
+  	@ResponseBody
+  	public ResponseEntity<HttpStatus> indexSentence(@RequestBody SentenceAndStem sentenceAndWordStem) {
 
-		try {
-			int numberOfWords = sentenceAndWordStem.getWords().length;
-			if(numberOfWords == 0) {
-				return new ResponseEntity<HttpStatus>(HttpStatus.LENGTH_REQUIRED); 
-			}
-		
-			
-			final List<SolrInputDocument> list = new ArrayList<SolrInputDocument>();
-			
-			for(String word : sentenceAndWordStem.getWords()) {
-		
-				SolrInputDocument solrInputDocument = new SolrInputDocument();
-				solrInputDocument.addField("word", word);
-				solrInputDocument.addField("sentence", sentenceAndWordStem.getSentence());
-				solrInputDocument.addField("fileName", sentenceAndWordStem.getFileName());
-				list.add(solrInputDocument);
-			}
-		
-			httpSolrClient.add(list);
-			httpSolrClient.commit();
-		   
-			return new ResponseEntity<HttpStatus>(HttpStatus.OK);
-			
-		} catch (Exception e) {
-			logger.error("{}",e);
-		}
-		
-		return new ResponseEntity<HttpStatus>(HttpStatus.BAD_REQUEST);
-	
-	}
+  		try {
+  			int numberOfWords = sentenceAndWordStem.getWords().length;
+  			if(numberOfWords == 0) {
+  				return new ResponseEntity<HttpStatus>(HttpStatus.LENGTH_REQUIRED); 
+  			}
+  		
+  			
+  			final List<SolrInputDocument> list = new ArrayList<SolrInputDocument>();
+  			
+  			for(String word : sentenceAndWordStem.getWords()) {
+  		
+  				SolrInputDocument solrInputDocument = new SolrInputDocument();
+  				solrInputDocument.addField("word", word);
+  				solrInputDocument.addField("sentence", sentenceAndWordStem.getSentence());
+  				solrInputDocument.addField("fileName", sentenceAndWordStem.getFileName());
+  				list.add(solrInputDocument);
+  			}
+  		
+  			httpSolrClient.add(list);
+  			httpSolrClient.commit();
+  		   
+  			return new ResponseEntity<HttpStatus>(HttpStatus.OK);
+  			
+  		} catch (Exception e) {
+  			logger.error("{}",e);
+  		}
+  		
+  		return new ResponseEntity<HttpStatus>(HttpStatus.BAD_REQUEST);
+  	
+  	}    	
+    
 }

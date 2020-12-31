@@ -1,11 +1,8 @@
 package lab.spark.task;
 
 import java.io.Serializable;
-import java.util.IntSummaryStatistics;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,15 +28,15 @@ public class TokenizeSentenceTask implements Serializable {
 		Map<String,String[]> wordsGroupedBySentence = 
 				openNLPSerializedWrapper.tokenizeSentence(tokenizerModel, englishStopWords, sentencesDTO.getSentences());
 	
-		IntSummaryStatistics totalWords = wordsGroupedBySentence.values().stream().map(new Function<String[], Integer>() {
-
-			@Override
-			public Integer apply(String[] t) {
-				return t.length;
-			}
-		}).collect(Collectors.summarizingInt(Integer:: intValue));
-		
-		logger.info("Total Sentences {} - Total Words {}", wordsGroupedBySentence.size(),totalWords.getSum());
+//		IntSummaryStatistics totalWords = wordsGroupedBySentence.values().stream().map(new Function<String[], Integer>() {
+//
+//			@Override
+//			public Integer apply(String[] t) {
+//				return t.length;
+//			}
+//		}).collect(Collectors.summarizingInt(Integer:: intValue));
+//		
+//		logger.info("Total Sentences {} - Total Words {}", wordsGroupedBySentence.size(),totalWords.getSum());
 		return wordsGroupedBySentence;
 	}
 

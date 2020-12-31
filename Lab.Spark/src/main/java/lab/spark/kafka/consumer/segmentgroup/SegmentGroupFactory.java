@@ -15,7 +15,7 @@ public class SegmentGroupFactory {
 				return stemWordSegmentGroup;
 				
 			case SENTENCECOUNT:
-				SentenceCountSegmentGroup sentenceCountSegmentGroup = new SentenceCountSegmentGroup();
+				TotalSentenceAndWordPerDocument sentenceCountSegmentGroup = new TotalSentenceAndWordPerDocument();
 				return sentenceCountSegmentGroup;
 				
 			case SENTENCE:

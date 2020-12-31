@@ -1,7 +1,7 @@
 package lab.spark.dto;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoSerializable;
@@ -12,16 +12,14 @@ public class WordsPerSentenceDTO implements KryoSerializable {
 	
 	private String fileName;
 	private String sentence;
-	private List<String> words;
+	private Set<String> words;
 	private int totalStems;
 	private int sentenceLength;
 	
-	public WordsPerSentenceDTO(String fileName,String sentence,List<String> words) {
+	public WordsPerSentenceDTO(String fileName,String sentence,Set<String> words) {
 		this.fileName = fileName;
 		this.sentence = sentence;
 		this.words = words;
-		this.totalStems = words.size();
-		this.sentenceLength = sentence.length();
 	}
 	
 	public String getFileName() {
@@ -36,28 +34,28 @@ public class WordsPerSentenceDTO implements KryoSerializable {
 	public void setSentence(String sentence) {
 		this.sentence = sentence;
 	}
-	public List<String> getWords() {
+	public Set<String> getWords() {
 		return words;
 	}
-	public void setWords(List<String> words) {
+	public void setWords(Set<String> words) {
 		this.words = words;
 	}
 	
 
 	public int getTotalStems() {
-		return totalStems;
+		return  words.size();
 	}
 
 	public void setTotalStems(int totalStems) {
-		this.totalStems = totalStems;
+		this.totalStems =  words.size();
 	}
 
 	public int getSentenceLength() {
-		return sentenceLength;
+		return sentence.length();
 	}
 
 	public void setSentenceLength(int sentenceLength) {
-		this.sentenceLength = sentenceLength;
+		this.sentenceLength = sentence.length();
 	}
 
 	@Override
@@ -107,7 +105,7 @@ public class WordsPerSentenceDTO implements KryoSerializable {
 	public void read(Kryo kryo, Input input) {
 		fileName = input.readString();
 		sentence = input.readString();
-		words = (ArrayList<String>) kryo.readClassAndObject(input);
+		words = (HashSet<String>) kryo.readClassAndObject(input);
 	}
 	
 }

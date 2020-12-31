@@ -49,7 +49,7 @@ public class SentenceSegmentGroup extends CommonSparkConsumerConfig
 
 	private Logger logger = LoggerFactory.getLogger(StemWordSegmentGroup.class);
 
-	public static final String CONSUMER_GROUP_NAME = "SENTENCE-CONSUMER-GROUP";
+	public static final String CONSUMER_GROUP_NAME = "SENTENCE-COUNT-CONSUMER-GROUP";
 	
 	final StructType schema = DataTypes.createStructType(
 			new StructField[] { 
@@ -89,12 +89,9 @@ public class SentenceSegmentGroup extends CommonSparkConsumerConfig
 		JavaDStream<WordsPerSentenceDTO> wordCountsJavaPairDStream = 
 				stemsDStream.mapPartitions(new WordPerSentenceExtractionFunction());
 		
-		
-		
 		wordCountsJavaPairDStream.foreachRDD(new VoidFunction<JavaRDD<WordsPerSentenceDTO>>() {
 
 			private static final long serialVersionUID = 1L;
-			
 			
 			@Override
 			public void call(JavaRDD<WordsPerSentenceDTO> rdd) throws Exception {
@@ -107,7 +104,6 @@ public class SentenceSegmentGroup extends CommonSparkConsumerConfig
 
 					@Override
 					public Row call(WordsPerSentenceDTO wordsPerSentenceDTO) throws Exception {
-						logger.info("WordsPerSentenceDTO {} ",wordsPerSentenceDTO);
 						Row row = RowFactory.create(
 								wordsPerSentenceDTO.getFileName(),
 								wordsPerSentenceDTO.getSentence(),
@@ -121,8 +117,8 @@ public class SentenceSegmentGroup extends CommonSparkConsumerConfig
 								totalSentencesPerFile.rdd(),
 								schema);
 			
-				dataset.createOrReplaceTempView("table");
-				Dataset<SentenceWordDto> selectedDataset = sparkSession.sql("select fileName,sentence, words from table ").as(Encoders.bean(SentenceWordDto.class));
+				dataset.createOrReplaceTempView("WordCountPerSentenceTable");
+				Dataset<SentenceWordDto> selectedDataset = sparkSession.sql("select fileName,sentence, words from WordCountPerSentenceTable ").as(Encoders.bean(SentenceWordDto.class));
 				
 				selectedDataset.foreach( new ForeachFunction<SentenceWordDto>() {
 				
@@ -148,7 +144,6 @@ public class SentenceSegmentGroup extends CommonSparkConsumerConfig
 	public JavaDStream<WordsPerSentenceDTO> streamTextContent(SparkSession sparkSession,
 			JavaStreamingContext javaStreamingContext, String kafkaServerList, String topicName,
 			String sparkStreamingSinkTopicList) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

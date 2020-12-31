@@ -42,20 +42,24 @@ public class DocumentAndSentenceKafka extends CommonKafkaConsumerConfig implemen
 
 				SentenceWordDto sentenceWordDto = record.value();
 				logger.info(sentenceWordDto.toString());
-//				SolrInputDocument solrInputDocument = new SolrInputDocument();
-//				solrInputDocument.addField("word", word);
-//				solrInputDocument.addField("sentence", sentenceAndWordStem.getSentence());
-//				solrInputDocument.addField("fileName", sentenceAndWordStem.getFileName());
-//				list.add(solrInputDocument);
-			}
+				
+				for(String word: sentenceWordDto.getWords()) {
 			
-			httpSolrClient.add(list);
-			httpSolrClient.commit();
-
+					SolrInputDocument solrInputDocument = new SolrInputDocument();
+					solrInputDocument.addField("word", word);
+					solrInputDocument.addField("sentence", sentenceWordDto.getSentence());
+					solrInputDocument.addField("fileName", sentenceWordDto.getFileName());
+					list.add(solrInputDocument);
+				}
+			
+			}
+			if( ! list.isEmpty()) {
+				httpSolrClient.add(list);
+				httpSolrClient.commit();
+			}
 		}
 
 		return null;
-
 	}
 
 	public void stopped() {

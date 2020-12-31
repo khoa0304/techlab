@@ -7,7 +7,6 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -24,7 +23,6 @@ import org.springframework.web.client.RestTemplate;
 import lab.spark.config.KafkaConfigService;
 import lab.spark.config.SparkConfigService;
 import lab.spark.kafka.consumer.segmentgroup.SegmentGroupFactory.SEGMENTGROUP;
-import lab.spark.kafka.producer.KafkaProducerForSpark;
 
 @Service
 public class SparkStreamingManager {

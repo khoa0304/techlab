@@ -3,6 +3,7 @@ package lab.spark.kafka.consumer.function;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.spark.api.java.function.Function;
@@ -42,7 +43,7 @@ public class WordPerSentenceExtractionArrayFunction implements Serializable,Func
 		for (Map.Entry<String, String[]> entry : wordsGroupBySentence.entrySet()) {
 
 			WordsPerSentenceDTO wordsPerSentenceDTO = new WordsPerSentenceDTO(
-					sentencesDTO.getFileName(), entry.getKey(), Arrays.asList(entry.getValue()));
+					sentencesDTO.getFileName(), entry.getKey(), new HashSet<>(Arrays.asList(entry.getValue())));
 
 			wordsPerSentenceDTOs[index++] = wordsPerSentenceDTO;
 		}

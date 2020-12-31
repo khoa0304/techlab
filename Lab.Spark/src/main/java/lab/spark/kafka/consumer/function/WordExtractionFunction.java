@@ -2,8 +2,10 @@ package lab.spark.kafka.consumer.function;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.slf4j.Logger;
@@ -22,7 +24,7 @@ public class WordExtractionFunction implements Serializable,FlatMapFunction<Iter
 		List<String> list = new ArrayList<String>();
 		while(t.hasNext()) {
 			WordsPerSentenceDTO wordsPerSentenceDTO = t.next();
-			List<String> words = wordsPerSentenceDTO.getWords();
+			Set<String> words = wordsPerSentenceDTO.getWords();
 			list.addAll(words);
 		}
 			

@@ -2,7 +2,9 @@ package lab.spark.kafka.consumer.function;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +26,6 @@ public class StemFunction implements Serializable,Function<WordsPerSentenceDTO[]
 	
 	private final Set<String> PUNCTUATION_SET = NlpUtil.getPunctuationSet();
 	
-	private static final String ALPHA_NUMERIC_PATTERN = "^[a-zA-Z0-9]*$";
 	@Override
 	public WordsPerSentenceDTO[] call(WordsPerSentenceDTO[] wordsGroupBySentenceList) throws Exception {
 
@@ -36,7 +37,7 @@ public class StemFunction implements Serializable,Function<WordsPerSentenceDTO[]
 		for (WordsPerSentenceDTO entry : wordsGroupBySentenceList) {
 
 			WordStemTask wordStemTask = new WordStemTask();
-			List<String> words = entry.getWords();
+			List<String> words = new ArrayList<>(entry.getWords());
 			String[] stems = wordStemTask.lemmatatizer(posModel,
 					words.toArray(new String[words.size()]));
 			int index = 0;
@@ -48,15 +49,11 @@ public class StemFunction implements Serializable,Function<WordsPerSentenceDTO[]
 							PUNCTUATION_SET.contains(originalWord) ? "" : originalWord);
 					stems[index] = words.get(index);
 				}
-				
-				if( ! stem.matches(ALPHA_NUMERIC_PATTERN)) {
-					stems[index] = "" ;
-				}
-			
 				index++;
 			}
 			logger.info("Total Words {} - Total Stems {} ", words.size(), stems.length);
-			entry.setWords(Arrays.asList(stems));
+			
+			entry.setWords(new HashSet<>(Arrays.asList(stems)));
 		}
 
 		return wordsGroupBySentenceList;

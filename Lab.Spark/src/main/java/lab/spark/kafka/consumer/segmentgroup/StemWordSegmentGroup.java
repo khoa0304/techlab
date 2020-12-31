@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -103,10 +102,10 @@ public class StemWordSegmentGroup extends CommonSparkConsumerConfig
 								JavaPairRDD.toRDD(rdd),
 								Encoders.tuple(Encoders.STRING(),Encoders.INT())).toDF("word","count");
 						
-				dataset.createOrReplaceTempView("table");
-				Dataset<Row> topWordsCount = sparkSession.sql("select word, count from table order by count desc limit 20");
+				dataset.createOrReplaceTempView("WordCountTable");
+				Dataset<Row> topWordsCount = sparkSession.sql("select word, count from WordCountTable order by count desc limit 10");
 				
-				dataset.write().format("console").save();
+				topWordsCount.show();
 				
 				topWordsCount.selectExpr("CAST(word AS STRING) AS key", "CAST(count AS STRING) AS value")
 				  .write()
