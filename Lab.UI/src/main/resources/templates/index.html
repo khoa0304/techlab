@@ -19,59 +19,22 @@
 
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script
+	src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
 
 <link th:rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.min.css} " />
 <link th:rel="stylesheet" th:href="@{/css/dropzone/dropzone.css}" />
 <link th:rel="stylesheet" th:href="@{/css/toastr/toastr.min.css}" />
+<link rel="stylesheet"
+	href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
 
-
-<script>
-	$(function() {
-		$("#searchBox")
-				.autocomplete(
-						{
-							source : function(request, response) {
-								$
-										.ajax({
-											url : "http://12.8.0.2:11515/search/getTags?querytext="
-													+ request.term + "",
-											dataType : "json",
-											minLength : 2,
-											data : {
-												q : request.term
-											},
-											success : function(data) {
-
-												response($.map(data, function(
-														item) {
-													return {
-														label : item.tagName,
-														value : item.tagName
-													};
-												}));
-											},
-
-											error : function(data) {
-												console.log('search error');
-											}
-										});
-							},
-
-							select : function(event, ui) {
-								$("#result").html(ui.item.value).show();
-							}
-
-						})
-
-	});
-</script>
+<script th:src="@{/js/datatable/datatable.js}"></script>
+<script th:src="@{/js/search/search.js}"></script>
 <style>
-
 .dropzone .dz-preview .dz-image {
-  width: 100px;
-  height:100px;
+	width: 100px;
+	height: 100px;
 }
-
 </style>
 </head>
 <body>
@@ -82,15 +45,34 @@
 			<table>
 				<tr>
 					<td>
-						<button id="streamingButton" onclick="myFunction()">Start
-							Streaming</button>
+						<h4>Top Word Count</h4>
+						<table id="wordCountTable" class="display">
 
-						
+							<!-- Header Table -->
+							<thead>
+								<tr>
+									<th>Word</th>
+									<th>Count</th>
+								</tr>
+							</thead>
+						</table>
 					</td>
 					<td>
-					<p id="demo"></p>
+						<h4>Total Word & Sentence Count</h4>
+						<table id="sentenceAndWordCountTable" class="display">
+
+							<!-- Header Table -->
+							<thead>
+								<tr>
+									<th>File_Name</th>
+									<th>Word_Count</th>
+									<th>Sentence_Count</th>
+								</tr>
+							</thead>
+						</table>
 					</td>
 				</tr>
+
 				<tr>
 					<td>
 
@@ -109,8 +91,8 @@
 
 					</td>
 				</tr>
-			</table>
 
+			</table>
 		</div>
 		<div class="ui-layout-south">
 
@@ -148,10 +130,18 @@
 
 							<table>
 								<tr>
+									<td>
+										<button id="streamingButton" onclick="myFunction()" style="height: 50px; width: 150px	">Start
+											Streaming</button>
+									</td>
+									<td>
+										<p id="demo"></p>
+									</td>
 									<td><input type="text" id="searchBox"
 										style="height: 50px; width: 800px"></td>
 									<td><label for="search">Search </label></td>
 								</tr>
+
 							</table>
 
 						</div>
@@ -193,50 +183,8 @@
 	<script th:src="@{/js/bootstrap/bootstrap.min.js}"></script>
 	<script th:src="@{/js/dropzone/dropzone.js}"></script>
 	<script th:src="@{/js/toastr/toastr.min.js}"></script>
+	<script th:src="@{/js/dropzone/labdropzone.js}"></script>
+	<script th:src="@{/js/main.js}"></script>
 
-	<script type="text/javascript">
-		$('body').layout({
-			applyDefaultStyles : true
-		});
-		$('#inner').layout({
-			applyDefaultStyles : true
-		});
-
-		Dropzone.autoDiscover = false;
-
-		$("#uploadFile").dropzone({
-
-			maxFilesize : 4096,//MB
-			timeout : 7200000,//milisecond - 2 hours
-			acceptedFiles : ".jpeg,.jpg,.png,.gif,.pdf,.txt,.csv",
-
-			success : function(file, response) {
-				toastr.success('File ' + file.name + ' uploaded successfully');
-			}
-
-		});
-
-		function myFunction() {
-		
-			$.post("/streaming/startstop", function(data) {
-				//As soon as the browser finished downloading, this function is called.
-				$('#demo').html(data);
-				
-				var buttontext = document.getElementById("streamingButton").innerHTML;
-				if (buttontext === 'Start Streaming In Progress')
-					document.getElementById("streamingButton").innerHTML = "Stop Streaming";
-				else{
-					document.getElementById("streamingButton").innerHTML = "Start Streaming";
-				}
-			});
-
-			var buttontext = document.getElementById("streamingButton").innerHTML;
-			if (buttontext === 'Start Streaming')
-				document.getElementById("streamingButton").innerHTML = "Stop Streaming In Progress";
-			else{
-				document.getElementById("streamingButton").innerHTML = "Start Streaming In Progress";
-			}
-		}
-	</script>
 </body>
 </html>

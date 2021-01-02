@@ -1,6 +1,7 @@
 package lab.spark.rest.service;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,8 @@ public class SparkRestService {
 	@Autowired
 	private SparkStreamingManager sparkStreamingManager;
 	
+	private final AtomicBoolean isSparkStreamingStarted = new AtomicBoolean(false);
+	
 	@GetMapping("/ping")
 	@ResponseBody
 	public String ping(@RequestParam(name = "name", required = false, defaultValue = "Stranger") String name) {
@@ -32,16 +35,27 @@ public class SparkRestService {
 	@GetMapping("/streaming/stop")
 	@ResponseBody
 	public String stopStreaming() {
+		
+		if(!isSparkStreamingStarted.get()) {
+			return  "Spark Streaming Service is already stopped";
+		}
 		logger.info("Stop streaming context");
 		sparkStreamingManager.stopStreamingContext();
+		isSparkStreamingStarted.set(false);
 		return " Spark Streaming Service Stopped";
 	}
 	
 	@GetMapping("/streaming/start")
 	@ResponseBody
-	public String startStreaming() {
+	public String startStreaming(
+			@RequestParam(name = "localMode", required = false, defaultValue = "false") boolean localMode) {
+		
+		if(isSparkStreamingStarted.get()) {
+			return  "Spark Streaming Service is already started";
+		}
 		logger.info("Start streaming context");
-		sparkStreamingManager.startStreamingContext(new HashMap<>(0));
+		sparkStreamingManager.startStreamingContext(new HashMap<>(0),localMode);
+		isSparkStreamingStarted.set(true);
 		return " Spark Streaming Service Started";
 	}
 

@@ -14,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 
 import lab.spark.kafka.consumer.segmentgroup.SegmentGroup;
 import lab.spark.kafka.consumer.segmentgroup.SegmentGroupFactory;
-import lab.spark.kafka.consumer.segmentgroup.SegmentGroupFactory.SEGMENTGROUP;
 import lab.spark.kafka.producer.KafkaProducerForSpark;
 
 public class SparkStreamingManagerTask implements Callable<Boolean>{
@@ -30,9 +29,9 @@ public class SparkStreamingManagerTask implements Callable<Boolean>{
 	private SparkSession sparkSession;
 	
 	private String kafkaServerList;
-	private Map<SEGMENTGROUP, String> kafkaTopicPersegmentGroup = new HashMap<>();
+	private Map<String, String> kafkaTopicPersegmentGroup = new HashMap<>();
 	
-	private Map<SEGMENTGROUP, KafkaProducerForSpark> kafkaProducerPersegmentGroup = new HashMap<>();
+	private Map<String, KafkaProducerForSpark> kafkaProducerPersegmentGroup = new HashMap<>();
 	  
 	public SparkStreamingManagerTask(
 			SparkSession sparkSession,
@@ -41,7 +40,7 @@ public class SparkStreamingManagerTask implements Callable<Boolean>{
 			String kafkaServiceName,
 			String kafkaServerList,
 			String topicName,
-			Map<SEGMENTGROUP, String> kafkaTopicPersegmentGroup) {
+			Map<String, String> kafkaTopicPersegmentGroup) {
 		
 		this.sparkSession = sparkSession;
 		this.javaStreamingContext = jssc;
@@ -55,14 +54,14 @@ public class SparkStreamingManagerTask implements Callable<Boolean>{
 	@Override
 	public Boolean call() throws Exception {
 	
-		for(Map.Entry<SEGMENTGROUP, String> entry : kafkaTopicPersegmentGroup.entrySet()) {
+		for(Map.Entry<String, String> entry : kafkaTopicPersegmentGroup.entrySet()) {
 			
 			KafkaProducerForSpark kafkaProducerForSpark = new KafkaProducerForSpark(kafkaServerList);
 			Broadcast<KafkaProducerForSpark> kafkaProducerBroadcast = sparkSession.sparkContext()
 					.broadcast(kafkaProducerForSpark, scala.reflect.ClassTag$.MODULE$.apply(KafkaProducerForSpark.class));
 			
 			String sinkKafkaTopic = entry.getValue();
-			SEGMENTGROUP segmentGroup = entry.getKey();
+			String segmentGroup = entry.getKey();
 			String response = restTemplate.exchange(
 					"http://"+ kafkaServiceName +"/kafka/config/topic/create?topicName="+sinkKafkaTopic,
 					HttpMethod.POST, null,String.class).getBody();
@@ -84,7 +83,7 @@ public class SparkStreamingManagerTask implements Callable<Boolean>{
 			logger.warn(e.toString());
 		}
 		finally {
-			for(Map.Entry<SEGMENTGROUP, KafkaProducerForSpark> entry : kafkaProducerPersegmentGroup.entrySet()) {
+			for(Map.Entry<String, KafkaProducerForSpark> entry : kafkaProducerPersegmentGroup.entrySet()) {
 				entry.getValue().shutdownProducer();
 			}
 		}

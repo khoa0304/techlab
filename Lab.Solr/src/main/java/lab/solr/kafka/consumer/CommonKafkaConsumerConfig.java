@@ -17,7 +17,7 @@ public abstract class CommonKafkaConsumerConfig {
 	protected KafkaConsumer<String, SentenceWordDto> consumer;
 	
 
-	public KafkaConsumer<String,SentenceWordDto> createStringKeyValueConsumer(
+	public KafkaConsumer<String,SentenceWordDto> createSentenceWordDtoConsumer(
 			String brokerServerList, String topicName, String groupName) {
 
 		Properties props = new Properties();

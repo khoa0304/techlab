@@ -2,25 +2,26 @@ package lab.spark.kafka.consumer.segmentgroup;
 
 public class SegmentGroupFactory {
 
-	public enum SEGMENTGROUP{
-		WORD,SENTENCECOUNT,SENTENCE
+	public static enum BUILTIN_SEGMENTGROUP {
+		WORD_COUNT,SENTENCE_COUNT,SENTENCE_AND_WORD_COUNT
 	}
 	
-	public static SegmentGroup<?> createSegmentGroup(SEGMENTGROUP segmentGroup) {
+	public static SegmentGroup<?> createSegmentGroup(String segmentGroup) {
 		
 		switch(segmentGroup) {
 		
-			case WORD:
+			case "WORD_COUNT":
 				StemWordSegmentGroup stemWordSegmentGroup = new StemWordSegmentGroup();
 				return stemWordSegmentGroup;
 				
-			case SENTENCECOUNT:
-				TotalSentenceAndWordPerDocument sentenceCountSegmentGroup = new TotalSentenceAndWordPerDocument();
-				return sentenceCountSegmentGroup;
-				
-			case SENTENCE:
+			// This segment group sent to Solr for indexing
+			case "SENTENCE_COUNT":
 				SentenceSegmentGroup sentenceSegmentGroup = new SentenceSegmentGroup();
 				return sentenceSegmentGroup;
+				
+			case "SENTENCE_AND_WORD_COUNT":
+				TotalSentenceAndWordPerDocument sentenceCountSegmentGroup = new TotalSentenceAndWordPerDocument();
+				return sentenceCountSegmentGroup;
 		}
 		return null;
 	}

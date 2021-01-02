@@ -39,14 +39,19 @@ public class SparkConfigService {
 	
 
 
-	public SparkConf getSparkConfig(String className) {
+	public SparkConf getSparkConfig(String className, boolean localMode) {
 
 		SparkConf sparkConf = new SparkConf();
 		sparkConf.setAppName(className + ": " + simpleDateFormat.format(new Date()));
+		if(localMode) {
+			sparkConf.setMaster("local[*]");
+		}
+		else {
+			sparkConf.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort());
+		}
+				
 		sparkConf
-				.setMaster("spark://" + sparkCommonConfig.getSparkMasterHostPort())
-				//.setMaster("local[*]")
-				.set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
+		        .set("spark.driver.host", sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.local.ip",sparkCommonConfig.getSpark_Driver_Host())
 				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
 				.set("spark.kryo.registrationRequired", "false")
@@ -75,8 +80,8 @@ public class SparkConfigService {
 
 	//~~~~~~~~~~~~~ Below Not being used for actual code yet ~~~~~~~~~~~~ //
 	
-	public JavaSparkContext getJavaSparkContext(String className) {
-		SparkSession sparkSession = getSparkSession(className);
+	public JavaSparkContext getJavaSparkContext(String className,boolean localMode) {
+		SparkSession sparkSession = getSparkSession(className,localMode);
 		JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
 		// JavaSparkContext sparkContext = new
 		// JavaSparkContext(getSparkConf(getClass().getName()));//.sparkContext());
@@ -84,9 +89,9 @@ public class SparkConfigService {
 	}
 	
 	
-	public SparkSession getSparkSession(String className){
+	public SparkSession getSparkSession(String className, boolean localMode){
 
-		SparkSession sparkSession = getBasicSparkSessionBuilder(className).getOrCreate();
+		SparkSession sparkSession = getBasicSparkSessionBuilder(className,localMode).getOrCreate();
 		return sparkSession;
 	}
 
@@ -108,9 +113,9 @@ public class SparkConfigService {
 		return sparkConf;
 	}
 
-	public SparkSession getSparkSessionForCassandra(String className) throws UnknownHostException, ClassNotFoundException {
+	public SparkSession getSparkSessionForCassandra(String className,boolean localMode) throws UnknownHostException, ClassNotFoundException {
 
-		SparkSession sparkSession = getBasicSparkSessionBuilder(className)
+		SparkSession sparkSession = getBasicSparkSessionBuilder(className,localMode)
 				.config("spark.cassandra.connection.host", cassandraConfig.getContactPoints())
 				.config("spark.cassandra.connection.port", String.valueOf(cassandraConfig.getPort()))
 				.config("spark.cassandra.auth.username", cassandraConfig.getUsername())
@@ -120,10 +125,10 @@ public class SparkConfigService {
 	}
 
 	
-	private org.apache.spark.sql.SparkSession.Builder getBasicSparkSessionBuilder(String className) {
+	private org.apache.spark.sql.SparkSession.Builder getBasicSparkSessionBuilder(String className,boolean localMode) {
 		
 		org.apache.spark.sql.SparkSession.Builder sparkSessionBuilder = 
-				SparkSession.builder().config(getSparkConfig(className));
+				SparkSession.builder().config(getSparkConfig(className,localMode));
 		
 		return sparkSessionBuilder;
 	}

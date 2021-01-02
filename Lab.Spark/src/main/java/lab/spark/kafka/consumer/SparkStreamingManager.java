@@ -22,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import lab.spark.config.KafkaConfigService;
 import lab.spark.config.SparkConfigService;
-import lab.spark.kafka.consumer.segmentgroup.SegmentGroupFactory.SEGMENTGROUP;
+import lab.spark.kafka.consumer.segmentgroup.SegmentGroupFactory.BUILTIN_SEGMENTGROUP;
 
 @Service
 public class SparkStreamingManager {
@@ -51,7 +51,7 @@ public class SparkStreamingManager {
 	@Value("${spark.stream.sink.sentencecount.topic}")
 	private String sparkStreamingSinkSentenceCountTopic;
 	
-	@Value("${spark.stream.sink.sentence.topic:sentenceTopic}")
+	@Value("${spark.stream.sink.sentence.topic:SentenceTopic}")
 	private String sparkStreamingSinkSentenceTopic;
 	
 	private JavaStreamingContext javaStreamingContext;
@@ -68,24 +68,26 @@ public class SparkStreamingManager {
 		
 	}
 
-	public void startStreamingContext(Map<SEGMENTGROUP, String> kafkaTopicPersegmentGroup) {
+	public void startStreamingContext(Map<String, String> kafkaTopicPersegmentGroup, boolean localMode) {
 		
 		if( scheduledExecutorService != null && ! scheduledExecutorService.isTerminated()) return;
 		// add default SEGMENTGROUP and topic
-		kafkaTopicPersegmentGroup.put(SEGMENTGROUP.SENTENCECOUNT, sparkStreamingSinkSentenceCountTopic);
-		kafkaTopicPersegmentGroup.put(SEGMENTGROUP.WORD, sparkStreamingSinkWordCountTopic);
-		kafkaTopicPersegmentGroup.put(SEGMENTGROUP.SENTENCE, sparkStreamingSinkSentenceTopic);
+		kafkaTopicPersegmentGroup.put(BUILTIN_SEGMENTGROUP.WORD_COUNT.name(), sparkStreamingSinkWordCountTopic);
+		kafkaTopicPersegmentGroup.put(BUILTIN_SEGMENTGROUP.SENTENCE_COUNT.name(), sparkStreamingSinkSentenceCountTopic);
+		kafkaTopicPersegmentGroup.put(BUILTIN_SEGMENTGROUP.SENTENCE_AND_WORD_COUNT.name(), sparkStreamingSinkSentenceTopic);
 		
-		createSparkStreamingContext();
+		createSparkStreamingContext(localMode);
 		startSparkKafkaStreaming(kafkaTopicPersegmentGroup);
 	}
 	
 	public void stopStreamingContext() {
 		stopStreamingContextInternal();
-		scheduledExecutorService.shutdown();
+		if( scheduledExecutorService != null && ! scheduledExecutorService.isTerminated()) {
+			scheduledExecutorService.shutdown();
+		}
 	}
 	
-	public void startSparkKafkaStreaming(Map<SEGMENTGROUP, String> kafkaTopicPersegmentGroup) {
+	public void startSparkKafkaStreaming(Map<String, String> kafkaTopicPersegmentGroup) {
 
 		String topicName = kafkaConfig.getKafkaTextFileUploadTopic();
 		String kafkaServerList = kafkaConfig.getKafkaServerList();
@@ -121,9 +123,9 @@ public class SparkStreamingManager {
 
 
 	
-	private void createSparkStreamingContext() {
+	private void createSparkStreamingContext(boolean localMode) {
 		
-		sparkConfig = sparkConfigService.getSparkConfig("Word-Processing-App");
+		sparkConfig = sparkConfigService.getSparkConfig("Text-Document-Processing-App",localMode);
 		sparkSession = SparkSession.builder().config(sparkConfig).getOrCreate();
 		
 		sparkContext = sparkSession.sparkContext();

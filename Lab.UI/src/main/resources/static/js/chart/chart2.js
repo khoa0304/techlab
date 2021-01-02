@@ -57,7 +57,7 @@ setInterval(function() {
 	myChart.data.labels = src_Labels;
 	myChart.data.datasets[0].data = src_Data;
 	myChart.update();
-}, 1000);
+}, 3000);
 
 function dynamicColors() {
     var r = Math.floor(Math.random() * 255);

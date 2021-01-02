@@ -34,7 +34,7 @@ public class SparkCassandraTest extends CommonTestSetup {
 		
 		SparkOpenNlpProcessor sparkOpenNlpService = new SparkOpenNlpProcessor();
 		
-		this.sparkSession = sparkConfigService.getSparkSessionForCassandra(getClass().getName());
+		this.sparkSession = sparkConfigService.getSparkSessionForCassandra(getClass().getName(),true);
 		
 		SparkCassandra sparkCassandra = new SparkCassandra();
 //		JavaRDD<String> stringRDD = sparkCassandra.perform(sparkSession, KEYSPACE, TABLE, COLUMN_CONTENT);

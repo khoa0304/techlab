@@ -11,7 +11,7 @@ public class MapAndFilterTest extends CommonTestSetup {
 	@Test
 	public void test1() throws UnknownHostException, ClassNotFoundException {
 	
-		this.javaSparkContext = sparkConfigService.getJavaSparkContext(getClass().getName());
+		this.javaSparkContext = sparkConfigService.getJavaSparkContext(getClass().getName(),true);
 		MapAndFilter mapAndFilter = new MapAndFilter(); 
 		mapAndFilter.perform(javaSparkContext);		
 	}

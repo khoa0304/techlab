@@ -11,15 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
@@ -34,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lab.common.file.dto.DocumentStatisticDto;
-import lab.common.file.dto.SentenceWordDto;
 import lab.spark.dto.FileUploadContentDTO;
 import lab.spark.dto.SentencesDTO;
 import lab.spark.dto.WordsPerSentenceDTO;
@@ -45,7 +41,6 @@ import lab.spark.kafka.consumer.function.WordPerSentenceExtractionArrayFunction;
 import lab.spark.kafka.consumer.function.WordPerSentenceExtractionFunction;
 import lab.spark.kafka.producer.KafkaProducerForSpark;
 import scala.Tuple2;
-
 public class TotalSentenceAndWordPerDocument extends CommonSparkConsumerConfig 
 				implements Serializable,SegmentGroup<WordsPerSentenceDTO> {
 
@@ -136,17 +131,27 @@ public class TotalSentenceAndWordPerDocument extends CommonSparkConsumerConfig
 								Encoders.tuple(Encoders.STRING(),Encoders.bean(DocumentStatisticDto.class))).toDF("fileName","documentStatisticDto");
 			
 				dataset.createOrReplaceTempView("TotalSentenceAndWordTable");
-				Dataset<DocumentStatisticDto> selectedDataset = sparkSession.sql("select documentStatisticDto.fileName as fileName,"
+				Dataset<DocumentStatisticDto> selectedDataset = sparkSession.sql(
+						"select documentStatisticDto.fileName as fileName,"
 						+ " documentStatisticDto.totalSentences as totalSentences, "
 						+ " documentStatisticDto.totalWords as totalWords "
 						+ " from TotalSentenceAndWordTable ").as(Encoders.bean(DocumentStatisticDto.class));
 				
-				selectedDataset.selectExpr("CAST(fileName AS STRING) AS key", "CAST(totalSentences AS STRING) AS value")
-				  .write()
-				  .format("kafka")
-				  .option("kafka.bootstrap.servers", kafkaServerList)
-				  .option("topic", sparkStreamingSinkTopicList)
-				  .save();
+				Dataset<DocumentStatisticDto> persistedRDD = selectedDataset.persist();
+				
+				long count = persistedRDD.count();
+				
+				if(count > 0) {
+				
+					selectedDataset.selectExpr("CAST(fileName AS STRING) AS key", "to_json(struct(*)) AS value")
+					  .write()
+					  .format("kafka")
+					  .option("kafka.bootstrap.servers", kafkaServerList)
+					  .option("topic", sparkStreamingSinkTopicList)
+					  .save();
+				}
+				
+				selectedDataset.unpersist();
 				
 			}
 		});

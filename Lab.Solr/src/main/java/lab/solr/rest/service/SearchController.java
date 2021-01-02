@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.XMLResponseParser;
-import org.apache.solr.client.solrj.response.schema.SchemaResponse.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,7 @@ public class SearchController {
 	@Value("${solr.collection.default}")
 	private String defaultCollection;
 	
-	@Value("${spark.stream.sink.sentence.topic:sentenceTopic}")
+	@Value("${spark.stream.sink.sentence.topic:SentenceTopic}")
 	private String sparkStreamingSinkSentenceTopic;
 	
 	@Value("${kafka.server.list}")
@@ -58,7 +57,7 @@ public class SearchController {
 		httpSolrClient.setParser(new XMLResponseParser());
 	
 		documentAndSentenceKafka = new DocumentAndSentenceKafka(httpSolrClient);
-		documentAndSentenceKafka.createStringKeyValueConsumer(kafkaServerList, sparkStreamingSinkSentenceTopic, "Solr-DocumentSentence-Consumer-Group");
+		documentAndSentenceKafka.createSentenceWordDtoConsumer(kafkaServerList, sparkStreamingSinkSentenceTopic, "Solr-DocumentSentence-Consumer-Group");
 		
 		ExecutorService scheduledExecutor = Executors.newFixedThreadPool(1);
 		scheduledExecutor.submit(documentAndSentenceKafka);
