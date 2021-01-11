@@ -42,9 +42,9 @@ public class UIKafkaConsumerGroupInitializer implements Callable<Void>{
 	@Override
 	public Void call() throws Exception {
 	
-		Map<LocalDateTime, CommonKafkaConsumerConfig> UI_KAFKA_CONSUMER_REGISTRY = UIKafkaConsumerRegistry.getUIKafkaConsumerGroup();
+		Map<String, CommonKafkaConsumerConfig> UI_KAFKA_CONSUMER_REGISTRY = UIKafkaConsumerRegistry.getUIKafkaConsumerGroup();
 		
-		for(Map.Entry<LocalDateTime, CommonKafkaConsumerConfig> entry : UI_KAFKA_CONSUMER_REGISTRY.entrySet()) {
+		for(Map.Entry<String, CommonKafkaConsumerConfig> entry : UI_KAFKA_CONSUMER_REGISTRY.entrySet()) {
 			
 			CommonKafkaConsumerConfig consumerGroup = entry.getValue();
 			consumerGroup.createStringKeyValueConsumer(kafkaServerList);
