@@ -66,13 +66,23 @@ public class SentenceSegmentGroup extends CommonSparkConsumerConfig
 			String sparkStreamingSinkTopicList,
 			Broadcast<KafkaProducerForSpark> kafkaProducerBroadcast){
 		
+		return null;
+	}
+
+	@Override
+	public JavaDStream<WordsPerSentenceDTO> streamTextContent(
+			SparkSession sparkSession,
+			JavaStreamingContext javaStreamingContext, 
+			String kafkaServerList, String topicName,
+			String sparkStreamingSinkTopicList) {
+		
 		Map<String, Object> configMap = 
 				configConsumerGroupName(kafkaServerList, CONSUMER_GROUP_NAME);
 		
 		// Start reading messages from Kafka and get DStream
 		final JavaInputDStream<ConsumerRecord<String, String>> stream = 
 				KafkaUtils.createDirectStream(
-				jssc,
+						javaStreamingContext,
 				LocationStrategies.PreferConsistent(),
 				ConsumerStrategies.<String, String>Subscribe(Arrays.asList(topicName), 
 				configMap));
@@ -120,31 +130,31 @@ public class SentenceSegmentGroup extends CommonSparkConsumerConfig
 				dataset.createOrReplaceTempView("WordCountPerSentenceTable");
 				Dataset<SentenceWordDto> selectedDataset = sparkSession.sql("select fileName,sentence, words from WordCountPerSentenceTable ").as(Encoders.bean(SentenceWordDto.class));
 				
-				selectedDataset.foreach( new ForeachFunction<SentenceWordDto>() {
+//				selectedDataset.foreach( new ForeachFunction<SentenceWordDto>() {
+//				
+//					private static final long serialVersionUID = 1L;
+//
+//					@Override
+//					public void call(SentenceWordDto row) throws Exception {
+//						
+//						String producerPayload = new ObjectMapper().writeValueAsString(row);
+//						
+//						KafkaProducerForSpark kafkaProducerForSpark = kafkaProducerBroadcast.getValue();
+//						Producer<String, String> kafkaProducer = kafkaProducerForSpark.initKafkaProducer();
+//						kafkaProducerForSpark.pushToKafka(kafkaProducer, sparkStreamingSinkTopicList, producerPayload); 
+//					}
+//				});
 				
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					public void call(SentenceWordDto row) throws Exception {
-						
-						String producerPayload = new ObjectMapper().writeValueAsString(row);
-						
-						KafkaProducerForSpark kafkaProducerForSpark = kafkaProducerBroadcast.getValue();
-						Producer<String, String> kafkaProducer = kafkaProducerForSpark.initKafkaProducer();
-						kafkaProducerForSpark.pushToKafka(kafkaProducer, sparkStreamingSinkTopicList, producerPayload); 
-					}
-				});
+				selectedDataset.selectExpr("CAST(fileName AS STRING) AS key", "to_json(struct(*)) AS value")
+				  .write()
+				  .format("kafka")
+				  .option("kafka.bootstrap.servers", kafkaServerList)
+				  .option("topic", sparkStreamingSinkTopicList)
+				  .save();
 			}
 		});
 		
 		return wordCountsJavaPairDStream;
-	}
-
-	@Override
-	public JavaDStream<WordsPerSentenceDTO> streamTextContent(SparkSession sparkSession,
-			JavaStreamingContext javaStreamingContext, String kafkaServerList, String topicName,
-			String sparkStreamingSinkTopicList) {
-		return null;
 	}
 
 }

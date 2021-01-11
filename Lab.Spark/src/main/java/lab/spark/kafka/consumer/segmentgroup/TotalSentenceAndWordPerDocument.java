@@ -137,11 +137,11 @@ public class TotalSentenceAndWordPerDocument extends CommonSparkConsumerConfig
 						+ " documentStatisticDto.totalWords as totalWords "
 						+ " from TotalSentenceAndWordTable ").as(Encoders.bean(DocumentStatisticDto.class));
 				
-				Dataset<DocumentStatisticDto> persistedRDD = selectedDataset.persist();
+				//Dataset<DocumentStatisticDto> persistedRDD = selectedDataset.persist();
 				
-				long count = persistedRDD.count();
+				//long count = persistedRDD.count();
 				
-				if(count > 0) {
+				//if(count > 0) {
 				
 					selectedDataset.selectExpr("CAST(fileName AS STRING) AS key", "to_json(struct(*)) AS value")
 					  .write()
@@ -149,9 +149,9 @@ public class TotalSentenceAndWordPerDocument extends CommonSparkConsumerConfig
 					  .option("kafka.bootstrap.servers", kafkaServerList)
 					  .option("topic", sparkStreamingSinkTopicList)
 					  .save();
-				}
-				
-				selectedDataset.unpersist();
+//				}
+//				
+//				selectedDataset.unpersist();
 				
 			}
 		});

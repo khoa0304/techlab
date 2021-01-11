@@ -56,9 +56,9 @@ public class SparkStreamingManagerTask implements Callable<Boolean>{
 	
 		for(Map.Entry<String, String> entry : kafkaTopicPersegmentGroup.entrySet()) {
 			
-			KafkaProducerForSpark kafkaProducerForSpark = new KafkaProducerForSpark(kafkaServerList);
-			Broadcast<KafkaProducerForSpark> kafkaProducerBroadcast = sparkSession.sparkContext()
-					.broadcast(kafkaProducerForSpark, scala.reflect.ClassTag$.MODULE$.apply(KafkaProducerForSpark.class));
+//			KafkaProducerForSpark kafkaProducerForSpark = new KafkaProducerForSpark(kafkaServerList);
+//			Broadcast<KafkaProducerForSpark> kafkaProducerBroadcast = sparkSession.sparkContext()
+//					.broadcast(kafkaProducerForSpark, scala.reflect.ClassTag$.MODULE$.apply(KafkaProducerForSpark.class));
 			
 			String sinkKafkaTopic = entry.getValue();
 			String segmentGroup = entry.getKey();
@@ -70,8 +70,8 @@ public class SparkStreamingManagerTask implements Callable<Boolean>{
 	        
 	      
 	        SegmentGroup<?> segmentGroupImpl = SegmentGroupFactory.createSegmentGroup(segmentGroup);
-	        kafkaProducerPersegmentGroup.put(segmentGroup, kafkaProducerForSpark);
-	        segmentGroupImpl.streamTextContent(sparkSession, javaStreamingContext, kafkaServerList, topicName, sinkKafkaTopic,kafkaProducerBroadcast);
+	      //  kafkaProducerPersegmentGroup.put(segmentGroup, kafkaProducerForSpark);
+	        segmentGroupImpl.streamTextContent(sparkSession, javaStreamingContext, kafkaServerList, topicName, sinkKafkaTopic);
 	        
 		}
 		

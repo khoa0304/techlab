@@ -16,7 +16,7 @@ public class UIKafkaConsumerGroupInitializer implements Callable<Void>{
 	
 	//private Map<String,CommonKafkaConsumerConfig> kafkaConsumerGroupPerSegment = new ConcurrentHashMap<>();
 	
-	private ExecutorService scheduledExecutor = Executors.newFixedThreadPool(5, new ThreadFactory() {
+	private ExecutorService scheduledExecutor = Executors.newFixedThreadPool(10, new ThreadFactory() {
 		
 		@Override
 		public Thread newThread(Runnable thread) {
