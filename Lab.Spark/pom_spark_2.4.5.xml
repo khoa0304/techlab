@@ -1,0 +1,278 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>lab-service-spark</artifactId>
+
+	<properties>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<parent>
+		<groupId>lab.service</groupId>
+		<artifactId>lab-service-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>repackage</id>
+							<goals>
+								<goal>repackage</goal>
+							</goals>
+							<configuration>
+								<mainClass>lab.SparkSpringBootApplication</mainClass>
+								<finalName>spark-service</finalName>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<configuration>
+						<excludes>
+							<exclude>**/log4j.properties</exclude>
+						</excludes>
+						<archive>
+							<manifest>
+								<addClasspath>false</addClasspath>
+								<mainClass>lab.SparkSpringBootApplication</mainClass>
+								<classpathPrefix>dependency-jars/</classpathPrefix>
+							</manifest>
+						</archive>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.12.4</version>
+					<configuration>
+						<skipTests>true</skipTests>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<!-- <resources> <resource> <directory>src/main/resources</directory> <filtering>true</filtering> 
+			<excludes> <exclude>**/opennlp/**</exclude> <exclude>**/bin/**</exclude> 
+			</excludes> </resource> </resources> -->
+	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<!--Spark java.lang.NoClassDefFoundError: org/codehaus/janino/InternalCompilerException -->
+			<dependency>
+				<groupId>org.codehaus.janino</groupId>
+				<artifactId>commons-compiler</artifactId>
+				<version>3.0.8</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.janino</groupId>
+				<artifactId>janino</artifactId>
+				<version>3.0.8</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>lab.service</groupId>
+			<artifactId>lab-service-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<!-- SPARK -->
+		<!-- Notes: 1. _2.11 such as spark-core_2.11 is for Spark compiled using 
+			Scala version 2.11 -->
+
+		<!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.11.12</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>commons-compiler</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_2.11</artifactId>
+			<version>2.4.5</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_2.11</artifactId>
+			<version>2.4.5</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql-kafka-0-10 -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql-kafka-0-10_2.11</artifactId>
+			<version>2.4.5</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-mllib -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-mllib_2.11</artifactId>
+			<version>2.4.5</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-hive -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-hive_2.11</artifactId>
+			<version>2.4.5</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-streaming -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming_2.11</artifactId>
+			<version>2.4.5</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-streaming-kafka-0-10 -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
+			<version>2.4.5</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.datastax.spark</groupId>
+			<artifactId>spark-cassandra-connector_2.11</artifactId>
+			<version>2.5.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.datastax.oss</groupId>
+					<artifactId>java-driver-core-shaded</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.datastax.oss</groupId>
+			<artifactId>java-driver-core</artifactId>
+			<version>4.5.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.johnsnowlabs.nlp/spark-nlp -->
+		<dependency>
+			<groupId>com.johnsnowlabs.nlp</groupId>
+			<artifactId>spark-nlp_2.11</artifactId>
+			<version>2.5.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>gremlin-core</artifactId>
+			<version>3.4.6</version>
+		</dependency>
+
+		<!-- OpenNLP -->
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-tools</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-uima</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.apache.opennlp</groupId> <artifactId>opennlp-morfologik-addon</artifactId> 
+			<version>1.9.2</version> </dependency> -->
+		<dependency>
+			<groupId>org.apache.opennlp</groupId>
+			<artifactId>opennlp-brat-annotator</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.inject/jersey-hk2 -->
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			 <version>2.7.0</version>
+		</dependency>
+
+
+		<!-- TestNG -->
+
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>6.8</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Test Dependency -->
+
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+
+	</dependencies>
+</project>
