@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>Top Trending Words</title>
+
+
+
+<link th:rel="stylesheet" th:href="@{/css/chart/chart1.css} " />
+
+<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+
+<link th:rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.min.css} " />
+<link th:rel="stylesheet" th:href="@{/css/dropzone/dropzone.css}" />
+<link th:rel="stylesheet" th:href="@{/css/toastr/toastr.min.css}" />
+
+<script th:src="@{/js/jquery/jquery-3.5.0.js}"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+
+</head>
+<body>
+
+	<h1>Document Analysis</h1>
+
+
+	<div id="wrapper" class="chart-container" style="position: relative; height:20vh; width:40vw" >
+		<canvas id="top-word-count-bar-chart-horizontal"></canvas>
+	</div>
+	
+    <div id="wrapper" class="chart-container" style="position: relative; height:20vh; width:40vw" >
+		<canvas id="sentence-word-count-bar-chart-horizontal"></canvas>
+	</div>
+
+	<script th:src="@{/js/chart/chart2.js}"></script>
+	<script th:src="@{/js/chart/chart3.js}"></script>
+
+
+</body>
+</html>

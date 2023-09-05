@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>Lab</title>
+
+
+
+<link th:rel="stylesheet" th:href="@{/css/chart/chart1.css} " />
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+
+</head>
+<body>
+
+	<h1>Chart.js speed test</h1>
+
+	<div id="menu">
+		<div>
+			<input id="num-items-input" value="20"> items</input>
+		</div>
+		<div>
+			<button id="update-button">Update data</button>
+		</div>
+	</div>
+
+	<div id="wrapper" class="chart-container" style="position: relative; height:20vh; width:40vw" >
+		<canvas id="chart"></canvas>
+	</div>
+
+<script th:src="@{/js/chart/chart1.js}"></script>
+	
+
+</body>
+</html>

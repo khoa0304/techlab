@@ -2,23 +2,24 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>lab.service</groupId>
+	<groupId>lab.service.standalone</groupId>
 	<artifactId>lab-service-ui</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
 		<java.version>17</java.version>
 		<spring-cloud.version>Hoxton.SR3</spring-cloud.version>
-		<bootstrap.version>4.0.0-2</bootstrap.version>
-		<webjars-locator.version>0.40</webjars-locator.version>
+		<bootstrap.version>5.3.1</bootstrap.version>
+		<webjars-locator.version>0.47</webjars-locator.version>
 		<lombok.version>1.18.24</lombok.version>
-		<bootstrap.version>4.4.1</bootstrap.version>
+
 	</properties>
+
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.6.RELEASE</version>
+		<version>3.0.4</version>
 	</parent>
 
 	<build>
@@ -50,15 +51,8 @@
 	</build>
 
 
-
 	<dependencies>
 
-
-		<dependency>
-			<groupId>lab.service</groupId>
-			<artifactId>lab-service-common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -90,23 +84,11 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
-		</dependency>
-
-
-		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
 
 
-		<!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-clients</artifactId>
-		</dependency>
-		
 		<!-- Security -->
 
 		<dependency>
@@ -114,14 +96,43 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+<!--
 		<dependency>
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session</artifactId>
 			<version>1.3.5.RELEASE</version>
 		</dependency>
-		
-		<!--  Web Socket Dependencies -->
+-->
+		<!--
+		https://mvnrepository.com/artifact/org.springframework.security/spring-security-config -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+		</dependency>
 
+
+		<!--  javax.servlet.http.HttpServletRequest dep -->
+
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.2.12</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
 
 	</dependencies>
 </project>
