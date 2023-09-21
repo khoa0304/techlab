@@ -14,6 +14,7 @@ import lab.ui.file.service.FileStorageProperties;
 @SpringBootApplication
 @EnableConfigurationProperties({
     FileStorageProperties.class
+   
 })
 public class MainUIApplication {
 
